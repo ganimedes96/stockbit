@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, BarChart3, Package } from "lucide-react";
+import { LayoutDashboard, Users, BarChart3, Package, TrendingUpDown } from "lucide-react";
 
 const year = new Date().getFullYear();
 const month = new Date().getMonth();
@@ -17,7 +17,7 @@ export const navItems = [
   },
   {
     title: "Movimentações",
-    icon: <Users />,
+    icon: <TrendingUpDown /> ,
     href: "/movements",
   },
 

@@ -46,12 +46,18 @@ export async function getMovements(companyId: string) {
   }
 }
 
-export async function getMovementsFilter(
+export async function getMovementsByDate(
   companyId: string,
-  filters?: GetMovementsFilters
+  filter: "day" | "month"
 ): Promise<Movements[]> {
   try {
-    // 1. Referência da coleção
+    const now = new Date();
+
+    const start =
+      filter === "day" ? startOfDay(now) : startOfMonth(now);
+    const end =
+      filter === "day" ? endOfDay(now) : endOfMonth(now);
+
     const movementsRef = collection(
       db,
       Collections.companies,
@@ -59,72 +65,28 @@ export async function getMovementsFilter(
       Collections.movements
     );
 
-    // 2. Construção das constraints
-    const constraints = [];
+    const movementsQuery = query(
+      movementsRef,
+      where("createdAt", ">=", Timestamp.fromDate(start)),
+      where("createdAt", "<=", Timestamp.fromDate(end)),
+      orderBy("createdAt", "desc")
+    );
 
-    // Filtro por tipo (entrada/saída)
-    if (filters?.type) {
-      constraints.push(where("type", "==", filters.type));
-    }
+    const snapshot = await getDocs(movementsQuery);
 
-    // Filtro por período (dia/mês)
-    if (filters?.date && filters?.period) {
-      const date =
-        filters.date instanceof Date ? filters.date : new Date(filters.date);
-
-      // Validação da data
-      if (isNaN(date.getTime())) {
-        throw new Error("Data inválida fornecida no filtro");
-      }
-
-      // Cálculo do intervalo
-      const range = getDateRange(date, filters.period);
-
-      constraints.push(
-        where("createdAt", ">=", Timestamp.fromDate(range.start)),
-        where("createdAt", "<=", Timestamp.fromDate(range.end))
-      );
-    }
-
-    // Ordenação padrão
-    constraints.push(orderBy("createdAt", "desc"));
-
-    // 3. Execução da query
-    const q = query(movementsRef, ...constraints);
-    const querySnapshot = await getDocs(q);
-
-    // 4. Mapeamento dos resultados
-    return querySnapshot.docs.map((doc) => {
+    const movements: Movements[] = snapshot.docs.map((doc) => {
       const data = doc.data();
       return {
         ...data,
         id: doc.id,
-        createdAt: convertToDate(data.createdAt),
-        updatedAt: convertToDate(data.updatedAt),
+        createdAt: data.createdAt.toDate(),
+        updatedAt: data.updatedAt?.toDate(),
       } as Movements;
     });
+
+    return movements;
   } catch (error) {
-    console.error("Error fetching movements:", error);
-    if (error instanceof Error) {
-      throw new Error(`Failed to fetch movements: ${error.message}`);
-    } else {
-      throw new Error("Failed to fetch movements: Unknown error");
-    }
+    console.error("Erro ao buscar movimentações:", error);
+    throw new Error("Erro ao buscar movimentações");
   }
-}
-
-// Funções auxiliares
-function getDateRange(date: Date, period: "day" | "month") {
-  return {
-    start: period === "day" ? startOfDay(date) : startOfMonth(date),
-    end: period === "day" ? endOfDay(date) : endOfMonth(date),
-  };
-}
-
-function convertToDate(timestamp: Timestamp | Date): Date | undefined {
-  if (!timestamp) return undefined;
-  if (timestamp instanceof Date) return timestamp;
-  if (timestamp.toDate) return timestamp.toDate();
-  if (timestamp.seconds) return new Date(timestamp.seconds * 1000);
-  return undefined;
 }

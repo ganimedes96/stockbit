@@ -34,7 +34,7 @@ export default function UpdateFormProduct({
 
   const { mutateAsync: updateProduct, isPending: isUpdating } =
     useUpdateProduct(user.company.id);
-  
+
   const {
     handleSubmit,
     control,
@@ -113,17 +113,17 @@ export default function UpdateFormProduct({
       <ScrollArea className="h-full w-full pr-4">
         <form onSubmit={handleSubmit(onSubmit)} className="w-full pb-4">
           <div className="flex flex-col gap-4">
-            {/* Seção da imagem */}
             <ControlledImage
               control={control}
               name="photo"
-              imageUrl={typeof product?.photo === "string" ? product.photo : undefined}
+              imageUrl={
+                typeof product?.photo === "string" ? product.photo : undefined
+              }
               label="Foto do produto (Opcional)"
               rules={{ required: false }}
               size={150}
             />
 
-            {/* Seção nome e SKU */}
             <div className="w-full grid grid-cols-1 md:grid-cols-[2fr_0.7fr] gap-4">
               <ControlledInput
                 className="w-full"
@@ -142,7 +142,6 @@ export default function UpdateFormProduct({
               />
             </div>
 
-            {/* Seção categoria e fornecedor */}
             <div className="w-full grid grid-cols-1 md:grid-cols-[2fr_2fr] gap-4">
               <ControlledCombobox
                 control={control}
@@ -200,7 +199,6 @@ export default function UpdateFormProduct({
               />
             </div>
 
-            {/* Seção preços e estoques */}
             <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-4">
               <ControlledInput
                 control={control}
@@ -240,7 +238,6 @@ export default function UpdateFormProduct({
               />
             </div>
 
-            {/* Descrição */}
             <ControlledTextarea
               control={control}
               name="description"
@@ -250,7 +247,6 @@ export default function UpdateFormProduct({
             />
           </div>
 
-          {/* Botão fixo na parte inferior - só aparece quando há alterações */}
           {isDirty && (
             <div className="sticky bottom-0 bg-background py-4 mt-4 border-t">
               <Button

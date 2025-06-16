@@ -1,5 +1,7 @@
 export enum QueryKeys {
   user = "user",
+  metricsByCategory = "metricsByCategory",
+  topProductsInStockValue= "topProductsInStockValue",
   clients = "clients",
   categories = "categories",
   suppliers = "suppliers",
@@ -7,5 +9,6 @@ export enum QueryKeys {
   products = "products",
   employees = "employees",
   overview = "overview",
+  metricsMovements = "metricsMovements",
   annualGains = "annualGains",
 }

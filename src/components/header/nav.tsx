@@ -3,6 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ScrollArea, ScrollBar } from "../ui/scroll-area";
 
 interface NavProps {
   items: {
@@ -14,27 +15,27 @@ interface NavProps {
 
 export function Nav({ items }: NavProps) {
   const pathname = usePathname();
+
   return (
-    <div className="w-full flex flex-row items-center justify-start gap-8 p-3">
-      {items.map((item) => (
-        <div key={item.href} className="flex items-center ">
-          <div className="">
-            <Link
-              prefetch={true}
-              href={item.href}
-              className={`flex items-center gap-3 flex-row rounded-lg py-2 text-muted-foreground hover:bg-secondary/50 
-                      ${
-                        pathname === item.href
-                          ? " text-yellow-500 font-medium"
-                          : ""
-                      }`}
-            >
-              
-              <span>{item.title}</span>
-            </Link>
-          </div>
-        </div>
-      ))}
-    </div>
+    <ScrollArea className="w-full max-w-full overflow-x-auto">
+
+      <div className="flex w-max flex-row items-center gap-4 px-4 py-2">
+        {items.map((item) => (
+          <Link
+            key={item.href}
+            prefetch
+            href={item.href}
+            className={`flex items-center gap-2 whitespace-nowrap rounded-lg px-3 py-2 text-muted-foreground hover:bg-secondary/50 ${
+              pathname === item.href ? "text-yellow-500 font-medium" : ""
+            }`}
+          >
+            {item.icon}
+            <span>{item.title}</span>
+          </Link>
+        ))}
+      </div>
+      <ScrollBar orientation="horizontal" />
+    </ScrollArea>
+    
   );
 }

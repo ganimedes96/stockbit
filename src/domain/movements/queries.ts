@@ -4,7 +4,7 @@ import { ResponseServerAction } from "@/api/types";
 import { createMovement } from "./action";
 import { handleServerActionResponse } from "@/api/handler";
 import { QueryKeys } from "@/lib/tanstack-query/keys";
-import { getMovements, getMovementsFilter, GetMovementsFilters } from "./client";
+import { getMovements, getMovementsByDate } from "./client";
 import { useRouter } from "next/navigation";
 
 export const useCreateMovement = (companyId: string) => {
@@ -31,9 +31,9 @@ export const useMovementList = (companyId: string) => {
 };
 
 
-export const useMovementsFilter = (companyId: string, filter:GetMovementsFilters) => {
+export const useMovementsFilter = (companyId: string, filter: "day" | "month") => {
   return useQuery({
-    queryKey: [QueryKeys.movements, companyId],
-    queryFn: async () => getMovementsFilter(companyId, filter),
+    queryKey: [QueryKeys.movements, companyId, filter],
+    queryFn: async () => getMovementsByDate(companyId, filter),
   });
 };

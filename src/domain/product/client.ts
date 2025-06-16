@@ -11,6 +11,7 @@ import { db } from "@/lib/firebase/firebase";
 import { Collections } from "@/lib/firebase/collections";
 import { Product } from "./types";
 
+
 export async function getProducts(companyId: string): Promise<Product[]> {
   try {
     const productsRef = collection(

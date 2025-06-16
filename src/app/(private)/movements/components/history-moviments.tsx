@@ -24,10 +24,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  useMovementList,
-  useMovementsFilter,
-} from "@/domain/movements/queries";
+import { useMovementsFilter } from "@/domain/movements/queries";
 import { StockMovementType } from "@/domain/movements/types";
 import { useProductList } from "@/domain/product/queries";
 import { User } from "@/domain/user/types";
@@ -53,18 +50,12 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
   const [selectStatus, setSelectStatus] = useState("all");
   const [selectPeriod, setSelectPeriod] = useState<"month" | "day">("month");
 
-  const { data: movements, isLoading: isLoadingMoviments } =
-    useMovementList(companyId);
+  const { data: movements, isLoading: isLoadingMoviments } = useMovementsFilter(
+    companyId,
+    selectPeriod
+  );
 
-    console.log(selectPeriod);
-    
-  const { data: filteredMovimentsData } = useMovementsFilter(companyId,{
-    date: new Date(),
-    period: selectPeriod,
-  }) 
-  
-
-  const { data: products , isLoading:isLoadingProducts } =
+  const { data: products, isLoading: isLoadingProducts } =
     useProductList(companyId);
 
   const getProduct = (productId: string) =>
@@ -85,19 +76,15 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
   });
 
   const STOCK_IN =
-    filteredMovimentsData
-      ?.filter(
-        (moviment) => moviment.type === StockMovementType.STOCK_IN
-      )
+    movements
+      ?.filter((moviment) => moviment.type === StockMovementType.STOCK_IN)
       .reduce((acc, moviment) => acc + moviment.quantity, 0) ?? 0;
 
   const STOCK_OUT =
-    filteredMovimentsData
-      ?.filter(
-        (moviment) => moviment.type === StockMovementType.STOCK_OUT
-      )
+    movements
+      ?.filter((moviment) => moviment.type === StockMovementType.STOCK_OUT)
       .reduce((acc, moviment) => acc + moviment.quantity, 0) ?? 0;
-                
+
   if (isLoadingMoviments || isLoadingProducts) {
     return <HistoryMovimentsSkeleton />;
   }
@@ -117,14 +104,13 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{`Entradas ${selectPeriod === "day" ? "Hoje" : "do mês"}`}</CardTitle>
+            <CardTitle className="text-sm font-medium">{`Entradas ${
+              selectPeriod === "day" ? "Hoje" : "do mês"
+            }`}</CardTitle>
             <TrendingUp className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">
-              +
-              {STOCK_IN}
-            </div>
+            <div className="text-2xl font-bold text-green-600">+{STOCK_IN}</div>
             <p className="text-xs text-muted-foreground">
               unidades adicionadas
             </p>
@@ -133,7 +119,9 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{`Saidas ${selectPeriod === "day" ? "Hoje" : "do mês"}`}</CardTitle>
+            <CardTitle className="text-sm font-medium">{`Saidas ${
+              selectPeriod === "day" ? "Hoje" : "do mês"
+            }`}</CardTitle>
             <TrendingDown className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
@@ -144,7 +132,9 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{`Variação ${selectPeriod === "day" ? "Hoje" : "do mês"}`}</CardTitle>
+            <CardTitle className="text-sm font-medium">{`Variação ${
+              selectPeriod === "day" ? "Hoje" : "do mês"
+            }`}</CardTitle>
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -192,91 +182,96 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
               </SelectContent>
             </Select>
           </div>
-           <ScrollArea className="max-h-[600px] overflow-auto">
-          <Table className="mt-6">
-            <TableHeader>
-              <TableRow>
-                <TableHead>Data/Hora</TableHead>
-                <TableHead>Produto</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Quantidade</TableHead>
-                <TableHead>Motivo</TableHead>
-                <TableHead>Observações</TableHead>
-                <TableHead>Usuário</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredMoviments?.map((movement) => (
-                <TableRow key={movement.id}>
-                  <TableCell className="font-mono text-sm">
-                    {format(movement.createdAt, "dd/MM/yyyy HH:mm")}
-                  </TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">
-                        {
-                          products?.find((p) => p.id === movement.productId)
-                            ?.name
-                        }
-                      </p>
-                      <p className="text-sm text-gray-500">
-                        SKU:{" "}
-                        {
-                          products?.find((p) => p.id === movement.productId)
-                            ?.sku
-                        }
-                      </p>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        movement.type === StockMovementType.STOCK_IN
-                          ? "default"
-                          : "secondary"
-                      }
-                      className={
-                        movement.type === StockMovementType.STOCK_IN
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                      }
-                    >
-                      {movement.type === StockMovementType.STOCK_IN ? (
-                        <>
-                          <TrendingUp className="h-3 w-3 mr-1" />
-                          Entrada
-                        </>
-                      ) : (
-                        <>
-                          <TrendingDown className="h-3 w-3 mr-1" />
-                          Saída
-                        </>
-                      )}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <span
-                      className={`font-medium ${
-                        movement.type === StockMovementType.STOCK_IN
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`}
-                    >
-                      {movement.type === StockMovementType.STOCK_IN ? "+" : "-"}
-                      {movement.quantity}
-                    </span>
-                  </TableCell>
-                  <TableCell>{movement.reason}</TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    {movement.description || "Nenhuma observação"}
-                  </TableCell>
-                  <TableCell>{movement.responsible  || "N/A"}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-            <ScrollBar orientation="vertical"/>
-           </ScrollArea>
+          <ScrollArea className="max-h-[900px] w-full overflow-auto">
+            <div className="min-w-[900px]">
+              <Table className="mt-6">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Data/Hora</TableHead>
+                    <TableHead>Produto</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Quantidade</TableHead>
+                    <TableHead>Motivo</TableHead>
+                    <TableHead>Observações</TableHead>
+                    <TableHead>Usuário</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredMoviments?.map((movement) => (
+                    <TableRow key={movement.id}>
+                      <TableCell className="font-mono text-sm">
+                        {format(movement.createdAt, "dd/MM/yyyy HH:mm")}
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">
+                            {
+                              products?.find((p) => p.id === movement.productId)
+                                ?.name
+                            }
+                          </p>
+                          <p className="text-sm text-gray-500">
+                            SKU:{" "}
+                            {
+                              products?.find((p) => p.id === movement.productId)
+                                ?.sku
+                            }
+                          </p>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          variant={
+                            movement.type === StockMovementType.STOCK_IN
+                              ? "default"
+                              : "secondary"
+                          }
+                          className={
+                            movement.type === StockMovementType.STOCK_IN
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }
+                        >
+                          {movement.type === StockMovementType.STOCK_IN ? (
+                            <>
+                              <TrendingUp className="h-3 w-3 mr-1" />
+                              Entrada
+                            </>
+                          ) : (
+                            <>
+                              <TrendingDown className="h-3 w-3 mr-1" />
+                              Saída
+                            </>
+                          )}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <span
+                          className={`font-medium ${
+                            movement.type === StockMovementType.STOCK_IN
+                              ? "text-green-600"
+                              : "text-red-600"
+                          }`}
+                        >
+                          {movement.type === StockMovementType.STOCK_IN
+                            ? "+"
+                            : "-"}
+                          {movement.quantity}
+                        </span>
+                      </TableCell>
+                      <TableCell>{movement.reason}</TableCell>
+                      <TableCell className="max-w-xs truncate">
+                        {movement.description || "Nenhuma observação"}
+                      </TableCell>
+                      <TableCell>{movement.responsible || "N/A"}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+            <ScrollBar orientation="horizontal" />
+            <ScrollBar orientation="vertical" />
+          </ScrollArea>
           {filteredMoviments?.length === 0 && (
             <div className="text-center py-8">
               <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
