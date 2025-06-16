@@ -4,7 +4,7 @@ import { db, storage } from "@/lib/firebase/admin";
 import { randomUUID } from "crypto";
 import { Timestamp } from "firebase/firestore";
 import { Collections } from "@/lib/firebase/collections";
-import { getDownlaodURLFromPath } from "@/utils/store-config/config";
+import {getDownloadURLFromPath } from "@/utils/store-config/config";
 import { compressImage } from "@/utils/compressFile/compress";
 import { ProfileProps } from "./types";
 
@@ -46,7 +46,7 @@ export async function updateProfile(data: ProfileProps) {
 
       const path = storageRef.name;
 
-      imagePath = await getDownlaodURLFromPath(path);
+      imagePath = await getDownloadURLFromPath(path);
     }
 
     await db

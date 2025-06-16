@@ -40,6 +40,8 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { useState } from "react";
+import { HistoryMovimentsSkeleton } from "./loading";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 interface HistoryMovimentsProps {
   companyId: string;
@@ -54,12 +56,15 @@ export function HistoryMoviments({ companyId, user }: HistoryMovimentsProps) {
   const { data: movements, isLoading: isLoadingMoviments } =
     useMovementList(companyId);
 
-  const { data: filteredMovimentsData } = useMovementsFilter(companyId, {
+    console.log(selectPeriod);
+    
+  const { data: filteredMovimentsData } = useMovementsFilter(companyId,{
     date: new Date(),
     period: selectPeriod,
-  });
+  }) 
+  
 
-  const { data: products, isLoading: isLoadingProducts } =
+  const { data: products , isLoading:isLoadingProducts } =
     useProductList(companyId);
 
   const getProduct = (productId: string) =>
@@ -93,7 +98,9 @@ export function HistoryMoviments({ companyId, user }: HistoryMovimentsProps) {
       )
       .reduce((acc, moviment) => acc + moviment.quantity, 0) ?? 0;
                 
-
+  if (isLoadingMoviments || isLoadingProducts) {
+    return <HistoryMovimentsSkeleton />;
+  }
   return (
     <div className="flex flex-col  mx-6 mb-6">
       <Tabs
@@ -185,6 +192,7 @@ export function HistoryMoviments({ companyId, user }: HistoryMovimentsProps) {
               </SelectContent>
             </Select>
           </div>
+           <ScrollArea className="max-h-[600px] overflow-auto">
           <Table className="mt-6">
             <TableHeader>
               <TableRow>
@@ -267,6 +275,8 @@ export function HistoryMoviments({ companyId, user }: HistoryMovimentsProps) {
               ))}
             </TableBody>
           </Table>
+            <ScrollBar orientation="vertical"/>
+           </ScrollArea>
           {filteredMoviments?.length === 0 && (
             <div className="text-center py-8">
               <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />

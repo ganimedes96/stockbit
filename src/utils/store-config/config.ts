@@ -3,7 +3,7 @@ import { getStorage } from "firebase-admin/storage";
 
  
   const storage = getStorage().bucket();
-  async function getDownlaodURLFromPath(path: string) {
+  async function getDownloadURLFromPath(path: string) {
     if (!path) return null;
     
     const file = storage.file(path);
@@ -17,5 +17,5 @@ import { getStorage } from "firebase-admin/storage";
   }
   
   
-  export {  getDownlaodURLFromPath }
+  export {  getDownloadURLFromPath }
  

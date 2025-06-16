@@ -18,7 +18,7 @@ export const buttonVariants = cva(
         success:
           "bg-success text-secondary-foreground shadow-sm hover:bg-success/80 border-0",
         warning:
-          "bg-warning text-secondary-foreground shadow-sm hover:bg-warning/80 border-0",
+          "bg-amber-500 text-secondary-foreground shadow-sm hover:bg-warning/80 border-0",
         info: "bg-info text-secondary-foreground shadow-sm hover:bg-info/80",
       },
       size: {

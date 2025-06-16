@@ -5,15 +5,15 @@ import { ResponseServerAction, StatusServer } from "@/api/types";
 import { Product, ProductInput, ProductUpdateInput } from "./types";
 import { compressImage } from "@/utils/compressFile/compress";
 import { randomUUID } from "crypto";
-import { getDownlaodURLFromPath } from "@/utils/store-config/config";
+import { getDownloadURLFromPath } from "@/utils/store-config/config";
+import { getUser } from "../user/server";
 
 export async function CreateProduct(
   company: string,
   product: ProductInput
 ): Promise<ResponseServerAction> {
   try {
-
-  const file = product.photo as File;
+    const file = product.photo as File;
 
     const hasFile = file instanceof File && file.size > 0;
     let imagePath = null;
@@ -22,7 +22,7 @@ export async function CreateProduct(
       const storageRef = storage.file(`products/${file.name}/${randomUUID()}`);
       await storageRef.save(compressedBuffer);
       const path = storageRef.name;
-      imagePath = await getDownlaodURLFromPath(path);
+      imagePath = await getDownloadURLFromPath(path);
     }
 
     const body: ProductInput = {
@@ -63,13 +63,46 @@ export async function UpdateProduct(
   company: string,
   product: ProductUpdateInput
 ): Promise<ResponseServerAction> {
+  const user = await getUser();
+
+  console.log("PRODUCT", product);
+
   try {
+    const userId = user?.id;
+    const file = product.photo as File;
+    const hasFile = file instanceof File && file.size > 0;
+    let imagePath = null;
+    const userDoc = await db
+      .collection(Collections.companies)
+      .doc(userId ?? "")
+      .get();
+    const currentImagePath = userDoc.data()?.photo;
+    if (hasFile && currentImagePath) {
+      const currentStorageRef = storage.file(currentImagePath);
+      const [exists] = await currentStorageRef.exists();
+      if (exists) {
+        await currentStorageRef.delete();
+      }
+    }
+
+    if (hasFile) {
+      const compressedBuffer = await compressImage(file);
+
+      const storageRef = storage.file(`products/${file.name}/${randomUUID()}`);
+
+      await storageRef.save(compressedBuffer);
+
+      const path = storageRef.name;
+
+      imagePath = await getDownloadURLFromPath(path);
+    }
+
     const body: ProductUpdateInput = {
       id: product.id,
       name: product.name,
       sku: product.sku ?? "",
+      photo: imagePath ?? "",
       categoryId: product.categoryId,
-      photo: product.photo ?? "",
       description: product.description ? product.description : "",
       isActive: product.isActive,
       minimumStock: product.minimumStock,
@@ -125,8 +158,11 @@ export async function DeleteProduct(
   }
 }
 
-
-export async function UpdateStockProduct(companyId: string, productId: string, stock: number) {
+export async function UpdateStockProduct(
+  companyId: string,
+  productId: string,
+  stock: number
+) {
   try {
     await db
       .collection(Collections.companies)
@@ -146,7 +182,6 @@ export async function UpdateStockProduct(companyId: string, productId: string, s
     };
   }
 }
-
 
 export async function UpdateSatusProduct(
   companyId: string,
@@ -172,5 +207,3 @@ export async function UpdateSatusProduct(
     };
   }
 }
-
-

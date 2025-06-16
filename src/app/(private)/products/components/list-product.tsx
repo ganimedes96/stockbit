@@ -51,12 +51,12 @@ export function ListProduct({ companyId, user }: ListProductProps) {
 
   const getStockStatus = (stock: number, minStock: number) => {
     if (stock <= 0) {
-      return { variant: "destructive" as const, label: "Esgotado" };
+      return { variant: "danger" as const, label: "Esgotado" };
     }
     if (stock <= minStock) {
       return { variant: "warning" as const, label: "Estoque Baixo" };
     }
-    return { variant: "default" as const, label: "Disponível" };
+    return { variant: "success" as const, label: "Disponível" };
   };
 
   const filteredProducts = products?.filter((product) => {
@@ -69,7 +69,6 @@ export function ListProduct({ companyId, user }: ListProductProps) {
     const matchesCategory =
       selectedCategory === "all" || product.categoryId === selectedCategory;
 
-    // Filtro por status de estoque
     let matchesStockStatus = true;
     if (stockStatusFilter === "all") {
       matchesStockStatus = true;
@@ -186,10 +185,10 @@ export function ListProduct({ companyId, user }: ListProductProps) {
         </div>
       ) : (
         <Card>
-          <ScrollArea className="max-h-[400px] overflow-auto">
+          <ScrollArea className="max-h-[700px] overflow-auto">
             <Table>
               <TableHeader className=" bg-zinc-800 sticky top-0">
-                <TableRow >
+                <TableRow>
                   <TableHead>SKU</TableHead>
                   <TableHead>Imagem</TableHead>
                   <TableHead>Produto</TableHead>
@@ -246,9 +245,9 @@ export function ListProduct({ companyId, user }: ListProductProps) {
                           ?.name.toUpperCase()}
                       </TableCell>
                       <TableCell>
-                        R$ {product.purchasePrice.toFixed(2)}
+                         {formatCurrency(product.purchasePrice)}
                       </TableCell>
-                      <TableCell>R$ {product.salePrice.toFixed(2)}</TableCell>
+                      <TableCell>{formatCurrency(product.salePrice)}</TableCell>
                       <TableCell>
                         <div className="flex items-center space-x-2">
                           <span
@@ -266,7 +265,15 @@ export function ListProduct({ companyId, user }: ListProductProps) {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={stockStatus.variant}>
+                        <Badge
+                          className={`${
+                            stockStatus.variant === "warning"
+                              ? "bg-orange-500 hover:bg-orange-800"
+                              : stockStatus.variant === "success"
+                              ? "bg-green-500 hover:bg-green-800"
+                              : "bg-red-500 hover:bg-red-800"
+                          } text-black`}
+                        >
                           {stockStatus.label}
                         </Badge>
                       </TableCell>

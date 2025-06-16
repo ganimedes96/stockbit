@@ -11,6 +11,7 @@ import { useProductList } from "@/domain/product/queries";
 import { Product } from "@/domain/product/types";
 import { User } from "@/domain/user/types";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { is } from "date-fns/locale";
 import { useForm } from "react-hook-form";
 import z from "zod";
 
@@ -26,21 +27,20 @@ type FormMoviment = z.infer<typeof formMovimentSchema>;
 
 interface FormMovimentProps {
   user: User;
-  isLoading?: boolean;
   onSuccess: () => void;
 }
 
-export function FormMovement({
-  isLoading,
-  onSuccess,
-  user,
-}: FormMovimentProps) {
+export function FormMovement({ onSuccess, user }: FormMovimentProps) {
   const { mutateAsync } = useCreateMovement(user.company.id);
-  const { data: products, isLoading: isLoadingProducts } = useProductList(
-    user.company.id
-  );
+  const { data: products, isLoading } = useProductList(user.company.id);
 
-  const { control, reset, watch, handleSubmit } = useForm<FormMoviment>({
+  const {
+    control,
+    reset,
+    watch,
+    handleSubmit,
+    formState: { isSubmitting },
+  } = useForm<FormMoviment>({
     resolver: zodResolver(formMovimentSchema),
     defaultValues: {
       productId: "",
@@ -51,8 +51,6 @@ export function FormMovement({
   });
 
   const onSubmit = async (data: FormMoviment) => {
-    console.log(data);
-
     try {
       await mutateAsync(
         {
@@ -138,8 +136,8 @@ export function FormMovement({
           label="Descrição"
           limit={100}
         />
-        <Button className="w-full" type="submit" disabled={isLoading}>
-          {isLoading ? "Savando..." : "Registrar movimentação"}
+        <Button className="w-full" type="submit" disabled={isSubmitting}>
+          {isSubmitting ? "Savando..." : "Registrar movimentação"}
         </Button>
       </form>
     </>
