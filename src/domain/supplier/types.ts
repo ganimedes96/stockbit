@@ -13,7 +13,7 @@ export type Supplier = {
 };
 
 
-export type SupplierInput = Omit<Supplier, "id" | "updatedAt" | "createdAt">;
+export type SupplierInput = Omit<Supplier, "id" | "updatedAt" >;
 export type SupplierUpdateInput = Partial<SupplierInput> & { id: string };
 
 export type SupplierWithProducts = Supplier & {

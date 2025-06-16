@@ -36,14 +36,20 @@ export function FormSupplier({ companyId, onSuccess }: SupplierFormProps) {
 
   const onSubmit = async (data: FormSupplierSchema) => {
     try {
-      await mutateAsync(data, {
-        onSuccess: (data) => {
-          if (data.status === StatusServer.success) {
-            onSuccess();
-            reset();
-          }
+      await mutateAsync(
+        {
+          ...data,
+          createdAt: new Date(),
         },
-      });
+        {
+          onSuccess: (data) => {
+            if (data.status === StatusServer.success) {
+              onSuccess();
+              reset();
+            }
+          },
+        }
+      );
     } catch (error) {
       console.error("Error creating client:", error);
     }
