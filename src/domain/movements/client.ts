@@ -121,7 +121,7 @@ function getDateRange(date: Date, period: "day" | "month") {
   };
 }
 
-function convertToDate(timestamp: any): Date | undefined {
+function convertToDate(timestamp: Timestamp | Date): Date | undefined {
   if (!timestamp) return undefined;
   if (timestamp instanceof Date) return timestamp;
   if (timestamp.toDate) return timestamp.toDate();

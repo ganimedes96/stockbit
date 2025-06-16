@@ -6,7 +6,6 @@ import { FormSheet } from "@/components/form/containers/form-sheet";
 import { FormMovement } from "./components/form-movement";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { getProductsServer } from "@/domain/product/server";
 
 export default async function Movements() {
   const user = await getUser();

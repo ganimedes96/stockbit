@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/dialog";
 import { useDeleteProduct } from "@/domain/product/queries";
 import { Product } from "@/domain/product/types";
-
 import { Trash } from "lucide-react";
 import { useState } from "react";
 
@@ -25,11 +24,10 @@ interface ClientDeleteProps {
 
 export function ProductDelete({
   product,
-  description,
   companyId,
   buttonText,
 }: ClientDeleteProps) {
-    const { mutateAsync, isPending } = useDeleteProduct(companyId, product.id);
+  const { mutateAsync, isPending } = useDeleteProduct(companyId, product.id);
   const [open, setOpen] = useState(false);
 
   const handleDelete = async () => {
@@ -41,7 +39,6 @@ export function ProductDelete({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button
-          
           variant="outline"
           size="icon"
           className=" w-9 h-9 "

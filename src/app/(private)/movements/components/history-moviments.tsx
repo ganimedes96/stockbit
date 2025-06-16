@@ -48,7 +48,7 @@ interface HistoryMovimentsProps {
   user: User;
 }
 
-export function HistoryMoviments({ companyId, user }: HistoryMovimentsProps) {
+export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectStatus, setSelectStatus] = useState("all");
   const [selectPeriod, setSelectPeriod] = useState<"month" | "day">("month");

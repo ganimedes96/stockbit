@@ -2,7 +2,7 @@
 import { db, storage } from "@/lib/firebase/admin";
 import { Collections } from "@/lib/firebase/collections";
 import { ResponseServerAction, StatusServer } from "@/api/types";
-import { Product, ProductInput, ProductUpdateInput } from "./types";
+import {  ProductInput, ProductUpdateInput } from "./types";
 import { compressImage } from "@/utils/compressFile/compress";
 import { randomUUID } from "crypto";
 import { getDownloadURLFromPath } from "@/utils/store-config/config";

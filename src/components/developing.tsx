@@ -1,6 +1,6 @@
 "use client";
 
-import { Construction, Mail, Clock, Wrench } from "lucide-react";
+import { Construction,  Clock, Wrench } from "lucide-react";
 import ImageDevelop from "../assets/developing.png";
 import Image from "next/image";
 

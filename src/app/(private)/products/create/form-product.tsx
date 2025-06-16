@@ -1,7 +1,6 @@
 "use client";
 import { ControlledInput } from "@/components/form/controllers/controlled-input";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { User } from "@/domain/user/types";

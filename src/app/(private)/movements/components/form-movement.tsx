@@ -8,10 +8,8 @@ import { Button } from "@/components/ui/button";
 import { useCreateMovement } from "@/domain/movements/queries";
 import { StockMovementType } from "@/domain/movements/types";
 import { useProductList } from "@/domain/product/queries";
-import { Product } from "@/domain/product/types";
 import { User } from "@/domain/user/types";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { is } from "date-fns/locale";
 import { useForm } from "react-hook-form";
 import z from "zod";
 

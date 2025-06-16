@@ -1,4 +1,3 @@
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { getUser } from "@/domain/user/server";
 import {
   Card,
