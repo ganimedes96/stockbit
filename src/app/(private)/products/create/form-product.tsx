@@ -15,6 +15,8 @@ import { ControlledCombobox } from "@/components/form/controllers/controlled-com
 import { useSupplierList } from "@/domain/supplier/queries";
 import { FormSupplier } from "@/app/(private)/(supplier)/components/form-supplier";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useMemo } from "react";
+import { Dices } from "lucide-react";
 
 interface ProductFormProps {
   user: User;
@@ -24,11 +26,27 @@ export default function FormProduct({ user }: ProductFormProps) {
   const { data: categories, isFetching } = useCategoryList(user.company.id);
   const { data: suppliers } = useSupplierList(user.company.id);
   const { mutateAsync } = useCreateProduct(user.company.id);
+  const categoryOptions = useMemo(() => {
+    if (!categories) return [];
+    return categories.map((category) => ({
+      id: category.id,
+      name: category.name,
+    }));
+  }, [categories]);
 
+  const supplierOptions = useMemo(() => {
+    if (!suppliers) return [];
+    return suppliers.map((supplier) => ({
+      id: supplier.id,
+      name: supplier.name,
+    }));
+  }, [suppliers]);
   const {
     handleSubmit,
     reset,
     control,
+    setValue,
+    watch,
     formState: { isSubmitting },
   } = useForm<FormProductValues>({
     resolver: zodResolver(formProductSchema),
@@ -43,9 +61,16 @@ export default function FormProduct({ user }: ProductFormProps) {
       minimumStock: 1,
       isActive: false,
       salePrice: 1,
-      photo: undefined,
+      photo: "",
     },
   });
+  const productName = watch("name");
+  const handleGenerateSku = () => {
+    const prefix = productName.substring(0, 3).toUpperCase();
+    const randomNum = Math.floor(100 + Math.random() * 900);
+    const sku = `${prefix}-${randomNum}`;
+    setValue("sku", sku, { shouldValidate: true });
+  };
 
   const onSubmit = async (data: FormProductValues) => {
     try {
@@ -70,18 +95,7 @@ export default function FormProduct({ user }: ProductFormProps) {
 
       await mutateAsync(body, {
         onSuccess: () => {
-          reset({
-            name: "",
-            description: "",
-            supplierId: "",
-            purchasePrice: 1,
-            openingStock: 1,
-            minimumStock: 1,
-            isActive: false,
-            salePrice: 1,
-            photo: "",
-            categoryId: "",
-          });
+          reset();
         },
       });
     } catch (error) {
@@ -90,11 +104,12 @@ export default function FormProduct({ user }: ProductFormProps) {
   };
 
   return (
-    <div className="mx-auto flex flex-col h-[calc(100vh-150px)]"> {/* Ajuste a altura conforme necessário */}
+    <div className="mx-auto flex flex-col h-[calc(100vh-150px)]">
+      {" "}
+      {/* Ajuste a altura conforme necessário */}
       <ScrollArea className="h-full w-full pr-4">
         <form onSubmit={handleSubmit(onSubmit)} className="w-full pb-4">
           <div className="flex flex-col gap-4">
-            {/* Seção da imagem */}
             <ControlledImage
               control={control}
               name="photo"
@@ -103,8 +118,7 @@ export default function FormProduct({ user }: ProductFormProps) {
               size={150}
             />
 
-            {/* Seção nome e SKU */}
-            <div className="w-full grid grid-cols-1 md:grid-cols-[2fr_0.7fr] gap-4">
+            <div className="w-full grid grid-cols-[2fr_0.8fr] gap-4">
               <ControlledInput
                 className="w-full"
                 control={control}
@@ -113,26 +127,34 @@ export default function FormProduct({ user }: ProductFormProps) {
                 placeholder="Ex: Smartphone"
                 rules={{ required: "Nome é obrigatório" }}
               />
-              <ControlledInput
-                className="w-full"
-                control={control}
-                name="sku"
-                label="SKU"
-                placeholder="Ex: PE-001"
-              />
+              <div className="w-full flex flex-row gap-2 items-center justify-center">
+                <ControlledInput
+                  className="w-full"
+                  control={control}
+                  name="sku"
+                  label="SKU"
+                  placeholder="Ex: PER-001"
+                />
+                <Button
+                  disabled={!productName}
+                  type="button"
+                  variant="outline"
+                  className=" h-10 w-10 mt-6 disabled:pointer-events-none disabled:opacity-50"
+                  onClick={handleGenerateSku}
+                >
+                  <Dices />
+                </Button>
+              </div>
             </div>
 
-            {/* Seção categoria e fornecedor */}
+            
             <div className="w-full grid grid-cols-1 md:grid-cols-[2fr_2fr] gap-4">
               <ControlledCombobox
                 control={control}
                 name="categoryId"
                 label="Selecione uma categoria *"
                 loading={isFetching}
-                options={categories?.map((category) => ({
-                  id: category.id,
-                  name: category.name,
-                }))}
+                options={categoryOptions}
                 placeholder="Selecione um cliente"
                 rightComponent={
                   <FormSheet
@@ -156,10 +178,7 @@ export default function FormProduct({ user }: ProductFormProps) {
                 name="supplierId"
                 label="Selecione um fornecedor"
                 loading={isFetching}
-                options={suppliers?.map((supplier) => ({
-                  id: supplier.id,
-                  name: supplier.name,
-                }))}
+                options={supplierOptions}
                 placeholder="Selecione um fornecedor"
                 rightComponent={
                   <FormSheet
@@ -230,7 +249,6 @@ export default function FormProduct({ user }: ProductFormProps) {
             />
           </div>
 
-          {/* Botão fixo na parte inferior */}
           <div className="sticky bottom-0 bg-background py-4 mt-4 border-t">
             <Button
               className="w-full"

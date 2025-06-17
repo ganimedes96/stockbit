@@ -13,10 +13,11 @@ import { FormSheet } from "@/components/form/containers/form-sheet";
 import { FormCategory } from "@/app/(private)/category/components/form-category";
 import { FormSupplier } from "@/app/(private)/(supplier)/components/form-supplier";
 import { useSupplierList } from "@/domain/supplier/queries";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Product } from "@/domain/product/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ControlledTextarea } from "@/components/form/controllers/controlled-text-area";
+import { Dices } from "lucide-react";
 
 interface ProductFormProps {
   user: User;
@@ -35,10 +36,28 @@ export default function UpdateFormProduct({
   const { mutateAsync: updateProduct, isPending: isUpdating } =
     useUpdateProduct(user.company.id);
 
+  const categoryOptions = useMemo(() => {
+    if (!categories) return [];
+    return categories.map((category) => ({
+      id: category.id,
+      name: category.name,
+    }));
+  }, [categories]);
+
+  const supplierOptions = useMemo(() => {
+    if (!suppliers) return [];
+    return suppliers.map((supplier) => ({
+      id: supplier.id,
+      name: supplier.name,
+    }));
+  }, [suppliers]);
+
   const {
     handleSubmit,
     control,
     reset,
+    watch,
+    setValue,
     formState: { isDirty },
   } = useForm<FormProductValues>({
     resolver: zodResolver(formProductSchema),
@@ -55,6 +74,14 @@ export default function UpdateFormProduct({
       photo: product?.photo || undefined,
     },
   });
+  const productName = watch("name");
+
+  const handleGenerateSku = () => {
+    const prefix = productName.substring(0, 3).toUpperCase();
+    const randomNum = Math.floor(100 + Math.random() * 900);
+    const sku = `${prefix}-${randomNum}`;
+    setValue("sku", sku, { shouldValidate: true });
+  };
 
   useEffect(() => {
     if (product) {
@@ -124,7 +151,7 @@ export default function UpdateFormProduct({
               size={150}
             />
 
-            <div className="w-full grid grid-cols-1 md:grid-cols-[2fr_0.7fr] gap-4">
+            <div className="w-full grid grid-cols-[2fr_0.8fr] gap-4">
               <ControlledInput
                 className="w-full"
                 control={control}
@@ -133,13 +160,24 @@ export default function UpdateFormProduct({
                 placeholder="Ex: Smartphone"
                 rules={{ required: "Nome é obrigatório" }}
               />
-              <ControlledInput
-                className="w-full"
-                control={control}
-                name="sku"
-                label="SKU"
-                placeholder="Ex: PE-001"
-              />
+              <div className="w-full flex flex-row gap-2 items-center justify-center">
+                <ControlledInput
+                  className="w-full"
+                  control={control}
+                  name="sku"
+                  label="SKU"
+                  placeholder="Ex: PER-001"
+                />
+                <Button
+                  disabled={!productName}
+                  type="button"
+                  variant="outline"
+                  className=" h-10 w-10 mt-6 disabled:pointer-events-none disabled:opacity-50"
+                  onClick={handleGenerateSku}
+                >
+                  <Dices />
+                </Button>
+              </div>
             </div>
 
             <div className="w-full grid grid-cols-1 md:grid-cols-[2fr_2fr] gap-4">
@@ -148,10 +186,7 @@ export default function UpdateFormProduct({
                 name="categoryId"
                 label="Selecione uma categoria *"
                 loading={isFetching}
-                options={categories?.map((category) => ({
-                  id: category.id,
-                  name: category.name,
-                }))}
+                options={categoryOptions}
                 placeholder="Selecione um cliente"
                 rightComponent={
                   <FormSheet
@@ -175,10 +210,7 @@ export default function UpdateFormProduct({
                 name="supplierId"
                 label="Selecione um fornecedor"
                 loading={isFetching}
-                options={suppliers?.map((supplier) => ({
-                  id: supplier.id,
-                  name: supplier.name,
-                }))}
+                options={supplierOptions}
                 placeholder="Selecione um fornecedor"
                 rightComponent={
                   <FormSheet

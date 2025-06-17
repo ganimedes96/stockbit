@@ -36,9 +36,10 @@ import {
   TrendingDown,
   TrendingUp,
 } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { HistoryMovimentsSkeleton } from "./loading";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { useDebounce } from "@/hooks/use-debounce";
 
 interface HistoryMovimentsProps {
   companyId: string;
@@ -46,9 +47,10 @@ interface HistoryMovimentsProps {
 }
 
 export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
-  const [searchQuery, setSearchQuery] = useState("");
   const [selectStatus, setSelectStatus] = useState("all");
   const [selectPeriod, setSelectPeriod] = useState<"month" | "day">("month");
+  const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const { data: movements, isLoading: isLoadingMoviments } = useMovementsFilter(
     companyId,
@@ -58,32 +60,48 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
   const { data: products, isLoading: isLoadingProducts } =
     useProductList(companyId);
 
-  const getProduct = (productId: string) =>
-    products?.find((p) => p.id === productId);
+  const productMap = useMemo(() => {
+    if (!products) return new Map();
+    return products.reduce((map, product) => {
+      map.set(product.id, product);
+      return map;
+    }, new Map());
+  }, [products]);
 
-  const filteredMoviments = movements?.filter((movement) => {
-    const product = getProduct(movement.productId);
-    const search = searchQuery.toLowerCase();
+  const { filteredMovements, summaryIn, summaryOut } = useMemo(() => {
+    if (!movements || !productMap.size) {
+      return { filteredMovements: [], summaryIn: 0, summaryOut: 0 };
+    }
 
-    const matchesSearch =
-      product?.name?.toLowerCase().includes(search) ||
-      product?.sku?.toLowerCase().includes(search);
+    const summaryIn =
+      movements
+        .filter((m) => m.type === StockMovementType.STOCK_IN)
+        .reduce((acc, m) => acc + m.quantity, 0);
 
-    const matchesStatus =
-      selectStatus === "all" || movement.type === selectStatus;
+    const summaryOut =
+      movements
+        .filter((m) => m.type === StockMovementType.STOCK_OUT)
+        .reduce((acc, m) => acc + m.quantity, 0);
 
-    return matchesSearch && matchesStatus;
-  });
+    const filteredMovements = movements.filter((movement) => {
+      const product = productMap.get(movement.productId);
+      if (!product) return false;
 
-  const STOCK_IN =
-    movements
-      ?.filter((moviment) => moviment.type === StockMovementType.STOCK_IN)
-      .reduce((acc, moviment) => acc + moviment.quantity, 0) ?? 0;
+      const search = debouncedSearchTerm.toLowerCase();
 
-  const STOCK_OUT =
-    movements
-      ?.filter((moviment) => moviment.type === StockMovementType.STOCK_OUT)
-      .reduce((acc, moviment) => acc + moviment.quantity, 0) ?? 0;
+      const matchesSearch =
+        product.name?.toLowerCase().includes(search) ||
+        product.sku?.toLowerCase().includes(search);
+
+      const matchesStatus =
+        selectStatus === "all" || movement.type === selectStatus;
+
+      return matchesSearch && matchesStatus;
+    });
+
+    return { filteredMovements, summaryIn, summaryOut };
+  }, [movements, debouncedSearchTerm, selectStatus, productMap]);
+ 
 
   if (isLoadingMoviments || isLoadingProducts) {
     return <HistoryMovimentsSkeleton />;
@@ -110,7 +128,7 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
             <TrendingUp className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">+{STOCK_IN}</div>
+            <div className="text-2xl font-bold text-green-600">+{summaryIn}</div>
             <p className="text-xs text-muted-foreground">
               unidades adicionadas
             </p>
@@ -125,7 +143,7 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
             <TrendingDown className="h-4 w-4 text-red-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-red-600">-{STOCK_OUT}</div>
+            <div className="text-2xl font-bold text-red-600">-{summaryOut}</div>
             <p className="text-xs text-muted-foreground">unidades removidas</p>
           </CardContent>
         </Card>
@@ -140,11 +158,11 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
           <CardContent>
             <div
               className={`text-2xl font-bold ${
-                STOCK_IN - STOCK_OUT >= 0 ? "text-green-600" : "text-red-600"
+                summaryIn - summaryOut >= 0 ? "text-green-600" : "text-red-600"
               }`}
             >
-              {STOCK_IN - STOCK_OUT >= 0 ? "+" : ""}
-              {STOCK_IN - STOCK_OUT}
+              {summaryIn - summaryOut >= 0 ? "+" : ""}
+              {summaryIn - summaryOut}
             </div>
             <p className="text-xs text-muted-foreground">variação líquida</p>
           </CardContent>
@@ -160,12 +178,12 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-4">
             <Input
-              icon={<Search className="h-4 w-4 text-muted-foreground" />}
-              iconPosition="left"
-              placeholder="Buscar por produto ou SKU..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+              icon={<Search className="h-4 w-4 text-muted-foreground" />}
+              iconPosition="left"
+              placeholder="Buscar por produto ou SKU..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
 
             <Select value={selectStatus} onValueChange={setSelectStatus}>
               <SelectTrigger className="w-full sm:w-48">
@@ -197,7 +215,7 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredMoviments?.map((movement) => (
+                  {filteredMovements?.map((movement) => (
                     <TableRow key={movement.id}>
                       <TableCell className="font-mono text-sm">
                         {format(movement.createdAt, "dd/MM/yyyy HH:mm")}
@@ -211,7 +229,7 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
                             }
                           </p>
                           <p className="text-sm text-gray-500">
-                            SKU:{" "}
+                            SKU:
                             {
                               products?.find((p) => p.id === movement.productId)
                                 ?.sku
@@ -272,7 +290,7 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
             <ScrollBar orientation="horizontal" />
             <ScrollBar orientation="vertical" />
           </ScrollArea>
-          {filteredMoviments?.length === 0 && (
+          {filteredMovements?.length === 0 && (
             <div className="text-center py-8">
               <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
               <p className="text-gray-500">Nenhuma movimentação encontrada</p>
