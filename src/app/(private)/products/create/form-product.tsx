@@ -105,8 +105,7 @@ export default function FormProduct({ user }: ProductFormProps) {
 
   return (
     <div className="mx-auto flex flex-col h-[calc(100vh-150px)]">
-      {" "}
-      {/* Ajuste a altura conforme necessário */}
+   
       <ScrollArea className="h-full w-full pr-4">
         <form onSubmit={handleSubmit(onSubmit)} className="w-full pb-4">
           <div className="flex flex-col gap-4">
@@ -239,7 +238,6 @@ export default function FormProduct({ user }: ProductFormProps) {
               />
             </div>
 
-            {/* Descrição */}
             <ControlledTextarea
               control={control}
               name="description"

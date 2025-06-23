@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/select";
 
 interface SelectOption {
-  id: string;
+  id: string | number;
   name: string;
 }
 
@@ -44,6 +44,7 @@ export function ControlledSelect<FormType extends FieldValues>({
   rightComponent,
 }: ControlledSelectProps<FormType>) {
   return (
+  
     <Controller
       control={control}
       name={name}
@@ -78,7 +79,7 @@ export function ControlledSelect<FormType extends FieldValues>({
             </SelectTrigger>
             <SelectContent>
               {options?.map((option) => (
-                <SelectItem key={option.id} value={option.id}>
+                <SelectItem key={option.id} value={String(option.id)}>
                   {option.name}
                 </SelectItem>
               ))}

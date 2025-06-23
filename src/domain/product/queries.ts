@@ -34,7 +34,7 @@ export const useCreateProduct = (companyId: string) => {
       await CreateProduct(companyId, product),
     onSuccess: async (response) =>
       await handleServerActionResponse(queryProduct, response, [
-        QueryKeys.products,
+        QueryKeys.products, QueryKeys.movements
       ]),
   });
 };

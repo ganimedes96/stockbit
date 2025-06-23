@@ -9,6 +9,7 @@ export enum QueryKeys {
   products = "products",
   employees = "employees",
   overview = "overview",
+  debtors = "debtors",
   metricsMovements = "metricsMovements",
   annualGains = "annualGains",
 }

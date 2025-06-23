@@ -7,6 +7,9 @@ export type Movements = {
   id: string;
   type: StockMovementType;
   productId: string;
+  productName?: string;
+  productPrice?: number;
+  sku?: string;
   quantity: number;
   reason?: string;
   description?: string;
@@ -17,3 +20,5 @@ export type Movements = {
 
 
 export type MovimentsInput = Omit<Movements, 'id' | 'createdAt' | 'updatedAt'>
+export type MovimentsUpdate = Omit<Movements, 'createdAt' | 'updatedAt'>
+

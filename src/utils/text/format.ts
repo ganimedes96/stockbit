@@ -1,3 +1,4 @@
+
 export function formatCurrency(value?: number | string): string {
   if (!value) return "R$ 0,00";
   return new Intl.NumberFormat("pt-BR", {
@@ -43,3 +44,5 @@ export const getPercentage = (value: number, total: number): string => {
   const percentage = (value / total) * 100;
   return `${percentage.toFixed(2)}%`;
 };
+
+

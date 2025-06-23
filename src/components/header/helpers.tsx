@@ -1,4 +1,4 @@
-import { LayoutDashboard, Users, BarChart3, Package, TrendingUpDown } from "lucide-react";
+import { LayoutDashboard, Users, BarChart3, Package, TrendingUpDown, UserRoundSearch } from "lucide-react";
 
 const year = new Date().getFullYear();
 const month = new Date().getMonth();
@@ -19,6 +19,11 @@ export const navItems = [
     title: "Movimentações",
     icon: <TrendingUpDown /> ,
     href: "/movements",
+  },
+  {
+    title: "Devedores",
+    icon: <UserRoundSearch />,
+    href: "/debtors",
   },
 
   {
@@ -44,4 +49,6 @@ export const identifierLinks: { [key: string]: string } = {
   "/employees": "Funcionários",
   "/reports": "Relatórios",
   "/profile": "Perfil",
+  "/movements": "Movimentações",
+  "/debtors": "Devedores",
 };

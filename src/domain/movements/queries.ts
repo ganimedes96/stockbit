@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { MovimentsInput } from "./types";
+import { MovimentsInput, MovimentsUpdate } from "./types";
 import { ResponseServerAction } from "@/api/types";
 import { createMovement } from "./action";
 import { handleServerActionResponse } from "@/api/handler";
@@ -17,9 +17,22 @@ export const useCreateMovement = (companyId: string) => {
       await handleServerActionResponse(
         queryMoviment,
         response,
-        [QueryKeys.movements],
+        [QueryKeys.movements, QueryKeys.products],
         route
       ),
+  });
+};
+
+export const useUpdatedMoviment = (companyId: string) => {
+  const queryMoviment = useQueryClient();
+  return useMutation<ResponseServerAction, Error, MovimentsUpdate>({
+    mutationFn: async (moviment: MovimentsUpdate) =>
+      await createMovement(companyId, moviment),
+    onSuccess: async (response) =>
+      await handleServerActionResponse(queryMoviment, response, [
+        QueryKeys.movements,
+        QueryKeys.products,
+      ]),
   });
 };
 
@@ -30,8 +43,10 @@ export const useMovementList = (companyId: string) => {
   });
 };
 
-
-export const useMovementsFilter = (companyId: string, filter: "day" | "month") => {
+export const useMovementsFilter = (
+  companyId: string,
+  filter: "day" | "month"
+) => {
   return useQuery({
     queryKey: [QueryKeys.movements, companyId, filter],
     queryFn: async () => getMovementsByDate(companyId, filter),

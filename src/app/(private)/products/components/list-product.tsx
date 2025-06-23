@@ -13,7 +13,7 @@ import { useProductList } from "@/domain/product/queries";
 import { AlertTriangle, Filter, Search, SquarePen } from "lucide-react";
 
 import { useMemo, useState } from "react";
-import { CardProductSkeleton } from "./card-product-skeleton";
+import { TableSkeleton } from "./card-product-skeleton";
 import {
   Table,
   TableBody,
@@ -61,18 +61,15 @@ export function ListProduct({ companyId, user }: ListProductProps) {
   };
 
   const categoryMap = useMemo(() => {
-  // Se as categorias ainda não carregaram, retorna um mapa vazio.
-  if (!categories) {
-    return new Map<string, string>();
-  }
-  // Usa o método 'reduce' para transformar o array em um Map.
-  // Para cada 'category' no array, ele adiciona uma entrada no mapa
-  // com a chave 'category.id' e o valor 'category.name'.
-  return categories.reduce((map, category) => {
-    map.set(category.id, category.name);
-    return map;
-  }, new Map<string, string>());
-}, [categories]);
+    if (!categories) {
+      return new Map<string, string>();
+    }
+  
+    return categories.reduce((map, category) => {
+      map.set(category.id, category.name);
+      return map;
+    }, new Map<string, string>());
+  }, [categories]);
 
   const filteredProducts: Product[] = useMemo(() => {
     if (!products) return [];
@@ -194,143 +191,134 @@ export function ListProduct({ companyId, user }: ListProductProps) {
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {Array.from({ length: 6 }).map((_, index) => (
-            <Card key={index} className="w-full">
-              <CardProductSkeleton />
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <Card>
-          <ScrollArea className="max-h-[700px] overflow-auto">
-            <Table>
-              <TableHeader className=" bg-zinc-800 sticky top-0">
-                <TableRow>
-                  <TableHead>SKU</TableHead>
-                  <TableHead>Imagem</TableHead>
-                  <TableHead>Produto</TableHead>
-                  <TableHead>Categoria</TableHead>
-                  <TableHead>Preço de Custo</TableHead>
-                  <TableHead>Preço de Venda</TableHead>
-                  <TableHead>Estoque</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-center">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredProducts && filteredProducts.length > 0 ? (
-                  filteredProducts?.map((product: Product) => {
-                    const stockStatus = getStockStatus(
-                      product.openingStock,
-                      product.minimumStock
-                    );
+      <Card>
+        <ScrollArea className="max-h-[700px] overflow-auto">
+          <Table>
+            <TableHeader className=" bg-zinc-800 sticky top-0">
+              <TableRow>
+                <TableHead>SKU</TableHead>
+                <TableHead>Imagem</TableHead>
+                <TableHead>Produto</TableHead>
+                <TableHead>Categoria</TableHead>
+                <TableHead>Preço de Custo</TableHead>
+                <TableHead>Preço de Venda</TableHead>
+                <TableHead>Estoque</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-center">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                <TableSkeleton columns={9} rows={10} />
+              ) : filteredProducts && filteredProducts.length > 0 ? (
+                filteredProducts?.map((product: Product) => {
+                  const stockStatus = getStockStatus(
+                    product.openingStock,
+                    product.minimumStock
+                  );
 
-                    return (
-                      <TableRow key={product.id}>
-                        <TableCell className="font-mono text-sm">
-                          {product?.sku || "N/A"}
-                        </TableCell>
-                        <TableCell>
-                          <Image
-                            src={
-                              typeof product.photo === "string" ||
-                              typeof product.photo === "undefined"
-                                ? product.photo || ImageDefault
-                                : ImageDefault
+                  return (
+                    <TableRow key={product.id}>
+                      <TableCell className="font-mono text-sm">
+                        {product?.sku || "N/A"}
+                      </TableCell>
+                      <TableCell>
+                        <Image
+                          src={
+                            typeof product.photo === "string" ||
+                            typeof product.photo === "undefined"
+                              ? product.photo || ImageDefault
+                              : ImageDefault
+                          }
+                          alt={product.name}
+                          width={50}
+                          height={50}
+                          className="object-cover rounded-md"
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <div>
+                          <p className="font-medium">{product.name}</p>
+                          {product.openingStock <= product.minimumStock && (
+                            <div className="flex items-center text-orange-600 text-xs mt-1">
+                              <AlertTriangle className="h-3 w-3 mr-1" />
+                              Estoque baixo
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        {categoryMap.get(product.categoryId)?.toUpperCase() ||
+                          "SEM CATEGORIA"}
+                      </TableCell>
+                      <TableCell>
+                        {formatCurrency(product.purchasePrice)}
+                      </TableCell>
+                      <TableCell>{formatCurrency(product.salePrice)}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center space-x-2">
+                          <span
+                            className={
+                              product.openingStock <= product.minimumStock
+                                ? "text-orange-600 font-medium"
+                                : ""
                             }
-                            alt={product.name}
-                            width={50}
-                            height={50}
-                            className="object-cover rounded-md"
-                          />
-                        </TableCell>
-                        <TableCell>
-                          <div>
-                            <p className="font-medium">{product.name}</p>
-                            {product.openingStock <= product.minimumStock && (
-                              <div className="flex items-center text-orange-600 text-xs mt-1">
-                                <AlertTriangle className="h-3 w-3 mr-1" />
-                                Estoque baixo
-                              </div>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {categoryMap.get(product.categoryId)?.toUpperCase() || "SEM CATEGORIA"}
-                        </TableCell>
-                        <TableCell>
-                          {formatCurrency(product.purchasePrice)}
-                        </TableCell>
-                        <TableCell>
-                          {formatCurrency(product.salePrice)}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center space-x-2">
-                            <span
-                              className={
-                                product.openingStock <= product.minimumStock
-                                  ? "text-orange-600 font-medium"
-                                  : ""
-                              }
-                            >
-                              {product.openingStock}
-                            </span>
-                            <span className="text-gray-400 text-sm">
-                              / {product.minimumStock} mín
-                            </span>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <Badge
-                            className={`${
-                              stockStatus.variant === "warning"
-                                ? "bg-orange-500 hover:bg-orange-800"
-                                : stockStatus.variant === "success"
-                                ? "bg-green-500 hover:bg-green-800"
-                                : "bg-red-500 hover:bg-red-800"
-                            } text-black`}
                           >
-                            {stockStatus.label}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          {/* <Button variant="ghost" icon={<SquarePen />}></Button> */}
-                          <div className="flex items-center justify-center gap-3">
-                            <FormSheet
-                              title="Editar Produto"
-                              description="Editar produto no estoque"
-                              formComponent={UpdateFormProduct}
-                              formProps={{ product, user }}
-                              customButton={
-                                <Button size={"icon"} variant="outline">
-                                  <SquarePen />
-                                </Button>
-                              }
-                            />
-                            <ProductDelete
-                              product={product}
-                              companyId={companyId}
-                            />
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={9} className="h-24 text-center">
-                      Nenhum produto encontrado com os filtros aplicados.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-            <ScrollBar orientation="vertical" />
-          </ScrollArea>
-        </Card>
-      )}
+                            {product.openingStock}
+                          </span>
+                          <span className="text-gray-400 text-sm">
+                            / {product.minimumStock} mín
+                          </span>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={`${
+                            stockStatus.variant === "warning"
+                              ? "bg-orange-500 hover:bg-orange-800"
+                              : stockStatus.variant === "success"
+                              ? "bg-green-500 hover:bg-green-800"
+                              : "bg-red-500 hover:bg-red-800"
+                          } text-black`}
+                        >
+                          {stockStatus.label}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        {/* <Button variant="ghost" icon={<SquarePen />}></Button> */}
+                        <div className="flex items-center justify-center gap-3">
+                          <FormSheet
+                            title="Editar Produto"
+                            description="Editar produto no estoque"
+                            formComponent={UpdateFormProduct}
+                            formProps={{ product, user }}
+                            customButton={
+                              <Button size={"icon"} variant="outline">
+                                <SquarePen />
+                              </Button>
+                            }
+                          />
+                          <ProductDelete
+                            product={product}
+                            companyId={companyId}
+                          />
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={9} className="h-24 text-center">
+                    Nenhum produto encontrado com os filtros aplicados.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+          <ScrollBar orientation="vertical" />
+        </ScrollArea>
+      </Card>
     </div>
   );
 }

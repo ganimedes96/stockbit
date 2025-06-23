@@ -26,7 +26,6 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMovementsFilter } from "@/domain/movements/queries";
 import { StockMovementType } from "@/domain/movements/types";
-import { useProductList } from "@/domain/product/queries";
 import { User } from "@/domain/user/types";
 import { format } from "date-fns";
 import {
@@ -40,6 +39,7 @@ import { useMemo, useState } from "react";
 import { HistoryMovimentsSkeleton } from "./loading";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useDebounce } from "@/hooks/use-debounce";
+
 
 interface HistoryMovimentsProps {
   companyId: string;
@@ -57,53 +57,40 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
     selectPeriod
   );
 
-  const { data: products, isLoading: isLoadingProducts } =
-    useProductList(companyId);
 
-  const productMap = useMemo(() => {
-    if (!products) return new Map();
-    return products.reduce((map, product) => {
-      map.set(product.id, product);
-      return map;
-    }, new Map());
-  }, [products]);
-
+  // 2. O useMemo agora é muito mais simples e eficiente.
   const { filteredMovements, summaryIn, summaryOut } = useMemo(() => {
-    if (!movements || !productMap.size) {
-      return { filteredMovements: [], summaryIn: 0, summaryOut: 0 };
-    }
+    if (!movements) {
+      return { filteredMovements: [], summaryIn: 0, summaryOut: 0 };
+    }
 
-    const summaryIn =
-      movements
-        .filter((m) => m.type === StockMovementType.STOCK_IN)
-        .reduce((acc, m) => acc + m.quantity, 0);
+    // Os cálculos de resumo continuam os mesmos
+    const summaryIn = movements
+      .filter((m) => m.type === StockMovementType.STOCK_IN)
+      .reduce((acc, m) => acc + m.quantity, 0);
+    const summaryOut = movements
+      .filter((m) => m.type === StockMovementType.STOCK_OUT)
+      .reduce((acc, m) => acc + m.quantity, 0);
 
-    const summaryOut =
-      movements
-        .filter((m) => m.type === StockMovementType.STOCK_OUT)
-        .reduce((acc, m) => acc + m.quantity, 0);
+    // A lógica de filtro agora usa os dados da própria movimentação.
+    const filteredMovements = movements.filter((movement) => {
+      const search = debouncedSearchTerm.toLowerCase();
 
-    const filteredMovements = movements.filter((movement) => {
-      const product = productMap.get(movement.productId);
-      if (!product) return false;
+      // Busca diretamente nos campos denormalizados do documento de movimentação.
+      const matchesSearch =
+        movement.productName?.toLowerCase().includes(search) ||
+        movement.sku?.toLowerCase().includes(search);
 
-      const search = debouncedSearchTerm.toLowerCase();
+      const matchesStatus =
+        selectStatus === "all" || movement.type === selectStatus;
 
-      const matchesSearch =
-        product.name?.toLowerCase().includes(search) ||
-        product.sku?.toLowerCase().includes(search);
+      return matchesSearch && matchesStatus;
+    });
 
-      const matchesStatus =
-        selectStatus === "all" || movement.type === selectStatus;
+    return { filteredMovements, summaryIn, summaryOut };
+  }, [movements, debouncedSearchTerm, selectStatus]);
 
-      return matchesSearch && matchesStatus;
-    });
-
-    return { filteredMovements, summaryIn, summaryOut };
-  }, [movements, debouncedSearchTerm, selectStatus, productMap]);
- 
-
-  if (isLoadingMoviments || isLoadingProducts) {
+  if (isLoadingMoviments) {
     return <HistoryMovimentsSkeleton />;
   }
   return (
@@ -128,7 +115,9 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
             <TrendingUp className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">+{summaryIn}</div>
+            <div className="text-2xl font-bold text-green-600">
+              +{summaryIn}
+            </div>
             <p className="text-xs text-muted-foreground">
               unidades adicionadas
             </p>
@@ -178,12 +167,12 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-4">
             <Input
-              icon={<Search className="h-4 w-4 text-muted-foreground" />}
-              iconPosition="left"
-              placeholder="Buscar por produto ou SKU..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
+              icon={<Search className="h-4 w-4 text-muted-foreground" />}
+              iconPosition="left"
+              placeholder="Buscar por produto ou SKU..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
 
             <Select value={selectStatus} onValueChange={setSelectStatus}>
               <SelectTrigger className="w-full sm:w-48">
@@ -200,7 +189,7 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
               </SelectContent>
             </Select>
           </div>
-          <ScrollArea className="max-h-[900px] w-full overflow-auto">
+          <ScrollArea className="max-h-[500px] w-full overflow-auto">
             <div className="min-w-[900px]">
               <Table className="mt-6">
                 <TableHeader>
@@ -224,15 +213,13 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
                         <div>
                           <p className="font-medium">
                             {
-                              products?.find((p) => p.id === movement.productId)
-                                ?.name
+                             movement.productName  || "Sem nome"
                             }
                           </p>
                           <p className="text-sm text-gray-500">
                             SKU:
                             {
-                              products?.find((p) => p.id === movement.productId)
-                                ?.sku
+                             movement.sku || "Sem SKU"
                             }
                           </p>
                         </div>
@@ -282,6 +269,7 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
                         {movement.description || "Nenhuma observação"}
                       </TableCell>
                       <TableCell>{movement.responsible || "N/A"}</TableCell>
+                     
                     </TableRow>
                   ))}
                 </TableBody>

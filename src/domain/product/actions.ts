@@ -1,5 +1,5 @@
 "use server";
-import { db, storage } from "@/lib/firebase/admin";
+import { db, firestore, storage } from "@/lib/firebase/admin";
 import { Collections } from "@/lib/firebase/collections";
 import { ResponseServerAction, StatusServer } from "@/api/types";
 import {  ProductInput, ProductUpdateInput } from "./types";
@@ -7,44 +7,62 @@ import { compressImage } from "@/utils/compressFile/compress";
 import { randomUUID } from "crypto";
 import { getDownloadURLFromPath } from "@/utils/store-config/config";
 import { getUser } from "../user/server";
+import { StockMovementType } from "../movements/types";
 
 export async function CreateProduct(
-  company: string,
+  companyId: string, // Renomeado para seguir o padrão
   product: ProductInput
 ): Promise<ResponseServerAction> {
   try {
+    let imagePath: string | null = null;
     const file = product.photo as File;
-
     const hasFile = file instanceof File && file.size > 0;
-    let imagePath = null;
+
     if (hasFile) {
       const compressedBuffer = await compressImage(file);
-      const storageRef = storage.file(`products/${file.name}/${randomUUID()}`);
-      await storageRef.save(compressedBuffer);
-      const path = storageRef.name;
-      imagePath = await getDownloadURLFromPath(path);
+      const storageRef = storage.file(`products/${randomUUID()}-${file.name}`);
+      await storageRef.save(compressedBuffer, { public: true }); // Garante que o arquivo seja público
+      imagePath = storageRef.publicUrl(); // Forma mais direta de obter a URL pública
     }
 
-    const body: ProductInput = {
-      name: product.name,
-      categoryId: product.categoryId,
-      sku: product.sku ?? "",
-      photo: imagePath ?? "",
-      description: product.description ? product.description : "",
-      isActive: product.isActive,
-      minimumStock: product.minimumStock,
-      openingStock: product.openingStock,
-      purchasePrice: product.purchasePrice,
-      supplierId: product.supplierId ?? "",
-      salePrice: product.salePrice,
-      createdAt: new Date(),
-    };
+    await db.runTransaction(async (transaction) => {
+      const newProductRef = db.collection(Collections.companies).doc(companyId).collection(Collections.products).doc();
+      const newMovementRef = db.collection(Collections.companies).doc(companyId).collection(Collections.movements).doc();
 
-    await db
-      .collection(Collections.companies)
-      .doc(company)
-      .collection(Collections.products)
-      .add(body);
+      const productBody = {
+        name: product.name,
+        categoryId: product.categoryId,
+        sku: product.sku ?? "",
+        photo: imagePath ?? "", 
+        description: product.description || "",
+        isActive: product.isActive,
+        minimumStock: Number(product.minimumStock) || 0,
+        openingStock: Number(product.openingStock) || 0, 
+        purchasePrice: Number(product.purchasePrice) || 0,
+        supplierId: product.supplierId ?? "",
+        salePrice: Number(product.salePrice) || 0,
+        createdAt: firestore.Timestamp.now(), 
+      };
+      
+      if (product.openingStock && product.openingStock > 0) {
+        const movementBody = {
+            type: StockMovementType.STOCK_IN,
+            quantity: Number(product.openingStock),
+            reason: "Cadastro Inicial",
+            description: "Entrada de saldo inicial do produto no sistema.",
+            productId: newProductRef.id,
+            sku: product.sku ?? "",
+            productName: product.name, // Denormalização
+            productPrice: Number(product.purchasePrice) || 0, // Salva o preço de custo
+            createdAt: firestore.Timestamp.now(),
+            responsible: "admin", // Ou o nome do usuário logado
+        };
+        transaction.set(newMovementRef, movementBody);
+      }
+      
+      transaction.set(newProductRef, productBody);
+    });
+
     return {
       status: StatusServer.success,
       message: "Produto criado com sucesso",
@@ -207,3 +225,4 @@ export async function UpdateSatusProduct(
     };
   }
 }
+
