@@ -61,12 +61,10 @@ export type Installments = {
 
 }
 
-// Tipo para uma parcela como ela vem do Firestore
 export type FirestoreInstallment = Omit<Installments, "dueDate"> & {
   dueDate: Timestamp; // A única diferença: o tipo é Timestamp
 };
 
-// Tipo para o objeto de dívida como ele vem do Firestore (de doc.data())
 export type FirestoreDebtorsData = Omit<Debtors, "id" | "createdAt" | "updatedAt" | "cashPayment" | "installments"> & {
   createdAt: Timestamp;
   updatedAt?: Timestamp;

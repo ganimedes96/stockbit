@@ -50,6 +50,7 @@ export function DebtCard({
 }: DebtCardProps) {
   const [confirmingInstallment, setConfirmingInstallment] =
     useState<Installments | null>(null);
+    
   const [isConfirmingCashPayment, setIsConfirmingCashPayment] = useState(false);
   const summary = useMemo(() => {
     const paidInstallments =
@@ -72,10 +73,13 @@ export function DebtCard({
     return { amountPaid, amountRemaining, nextDueDate };
   }, [debt]);
 
-  const { mutateAsync: updateInstallment, isPending } =
+  const { mutateAsync: updateInstallment, isPending: isUpdatingInstallment } =
     useUpdateInstallmentStatus(companyId);
-  const { mutateAsync: updateDebtStatusCashPayment } =
+  const { mutateAsync: updateDebtStatusCashPayment, isPending: isUpdatingCash } =
     useUpdateDebtStatusCashPayment(companyId);
+
+
+
   const handleConfirmPayment = () => {
     if (!confirmingInstallment) return;
 
@@ -174,9 +178,9 @@ export function DebtCard({
                         size="sm"
                         variant="outline"
                         onClick={() => setConfirmingInstallment(inst)}
-                        disabled={isPending} // Desabilita enquanto a mutação está em andamento
+                        disabled={isUpdatingInstallment} // Desabilita enquanto a mutação está em andamento
                       >
-                        {isPending ? "Pagando..." : "Pagar"}
+                        {isUpdatingInstallment ? "Pagando..." : "Pagar"}
                       </Button>
                     )}
                   </div>
@@ -227,14 +231,14 @@ export function DebtCard({
           </AlertDialogHeader>
           <AlertDialogFooter>
             {/* O botão de cancelar já fecha o modal por padrão */}
-            <AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={isUpdatingInstallment}>Cancelar</AlertDialogCancel>
 
             {/* O botão de ação agora chama a função que executa a mutação */}
             <AlertDialogAction
               onClick={handleConfirmPayment}
-              disabled={isPending}
+              disabled={isUpdatingInstallment}
             >
-              {isPending ? "Confirmando..." : "Confirmar Pagamento"}
+              {isUpdatingInstallment ? "Confirmando..." : "Confirmar Pagamento"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -253,12 +257,12 @@ export function DebtCard({
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel disabled={isPending}>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel disabled={isUpdatingCash}>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleConfirmCashPayment}
-              disabled={isPending}
+              disabled={isUpdatingCash}
             >
-              {isPending ? "Confirmando..." : "Sim, confirmar"}
+              {isUpdatingCash ? "Confirmando..." : "Sim, confirmar"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

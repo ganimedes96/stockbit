@@ -22,8 +22,10 @@ export const calculateOverdueAmount = (debt: Debtors, today: Date): number => {
   const startOfToday = startOfDay(today);
 
   if (debt.payment === Payment.cashPayment && debt.cashPayment?.dueDate) {
-    if (isBefore(debt.cashPayment.dueDate, startOfToday)) {
-      return debt.totalSale; // Retorna o valor total se estiver em atraso
+    // CORREÇÃO: Garante que estamos comparando um objeto Date.
+    const dueDate = new Date(debt.cashPayment.dueDate);
+    if (isBefore(dueDate, startOfToday)) {
+      return debt.totalSale;
     }
   } else if (
     debt.payment === Payment.PaymentInInstallments &&
@@ -31,11 +33,12 @@ export const calculateOverdueAmount = (debt: Debtors, today: Date): number => {
   ) {
     let overdueInstallmentsValue = 0;
     for (const installment of debt.installments) {
-      if (
-        installment.status !== StatusDebtor.paid &&
-        isBefore(installment.dueDate, startOfToday)
-      ) {
-        overdueInstallmentsValue += installment.price;
+      if (installment.status !== StatusDebtor.paid) {
+        // CORREÇÃO: Garante que estamos comparando um objeto Date.
+        const installmentDueDate = new Date(installment.dueDate);
+        if (isBefore(installmentDueDate, startOfToday)) {
+          overdueInstallmentsValue += installment.price;
+        }
       }
     }
     return overdueInstallmentsValue;
@@ -51,7 +54,9 @@ export const getInstallmentStatus = (installment: Installments) => {
     return { text: "Pago", variant: "success" as const };
   }
 
-  if (isBefore(installment.dueDate, today)) {
+  // CORREÇÃO: Garante que estamos comparando um objeto Date.
+  const installmentDueDate = new Date(installment.dueDate);
+  if (isBefore(installmentDueDate, today)) {
     return { text: "Em Atraso", variant: "destructive" as const };
   }
 

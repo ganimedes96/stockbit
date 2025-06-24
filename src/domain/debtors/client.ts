@@ -10,9 +10,13 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase/firebase";
 import { Collections } from "@/lib/firebase/collections";
-import { Debtors, FirestoreDebtorsData, FirestoreInstallment, Installments } from "./types";
+import {
+  Debtors,
+  FirestoreDebtorsData,
+  FirestoreInstallment,
+} from "./types";
 
-export async function getDebtors(companyId: string) {
+export async function getDebtors(companyId: string): Promise<Debtors[]> {
   const debtorsRef = collection(
     db,
     Collections.companies,
@@ -21,27 +25,26 @@ export async function getDebtors(companyId: string) {
   );
   const q = query(debtorsRef, orderBy("createdAt", "desc"));
   const querySnapshot = await getDocs(q);
+
   return querySnapshot.docs.map((doc) => {
-    const data = doc.data();
+    const data = doc.data() as FirestoreDebtorsData;
 
     const processedData = {
       ...data,
       id: doc.id,
-      // Converte createdAt
-      createdAt: data.createdAt?.toDate ? data.createdAt.toDate() : new Date(),
-      // Converte dueDate em cashPayment, se existir
-      cashPayment: data.cashPayment
-        ? { ...data.cashPayment, dueDate: data.cashPayment.dueDate.toDate() }
+
+      createdAt: data.createdAt.toDate(),
+
+      cashPayment: data.cashPayment?.dueDate
+        ? { dueDate: data.cashPayment.dueDate.toDate() }
         : undefined,
-      // Mapeia o array de parcelas e converte o dueDate de cada uma, se existir
+
       installments: data.installments
-        ? data.installments.map((inst: Installments) => ({
+        ? data.installments.map((inst: FirestoreInstallment) => ({
             ...inst,
-            createdAt: data.createdAt?.toDate
-              ? data.createdAt.toDate()
-              : new Date(),
+            dueDate: inst.dueDate.toDate(),
           }))
-        : undefined,
+        : [],
     };
 
     return processedData as Debtors;
@@ -67,7 +70,6 @@ export async function getDebtorsByClientId(
   companyId: string,
   clientId: string
 ): Promise<Debtors[]> {
-  
   const debtorsRef = collection(
     db,
     Collections.companies,
@@ -92,7 +94,7 @@ export async function getDebtorsByClientId(
       ...data,
       id: doc.id,
       // TypeScript sabe que data.createdAt é um Timestamp e aceita .toDate()
-      createdAt: data.createdAt.toDate(), 
+      createdAt: data.createdAt.toDate(),
 
       cashPayment: data.cashPayment?.dueDate
         ? { ...data.cashPayment, dueDate: data.cashPayment.dueDate.toDate() }
@@ -107,7 +109,7 @@ export async function getDebtorsByClientId(
           }))
         : undefined,
     };
-    
+
     // 3. No final, afirmamos que o objeto foi "montado" e agora corresponde ao tipo 'Debtors' do App.
     return processedData as Debtors;
   });

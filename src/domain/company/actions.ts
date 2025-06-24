@@ -3,7 +3,7 @@
 
 import { CreateUser } from "../user/types";
 import { StatusServer } from "@/api/types";
-import { db, firebaseAdmin } from "@/lib/firebase/admin";
+import { db, firestore } from "@/lib/firebase/admin";
 import { Collections } from "@/lib/firebase/collections";
 import { handleFirebaseAuthError } from "@/lib/firebase/handle-firebase-auth-error";
 import { auth } from "firebase-admin";
@@ -58,7 +58,7 @@ export async function CreateCompany(data: Partial<CreateUser>) {
           ...body.company,
           id: create.uid,
         },
-        createdAt: firebaseAdmin.firestore.Timestamp.now(),
+        createdAt: firestore.Timestamp.now(),
       });
     return {
       status: StatusServer.success,

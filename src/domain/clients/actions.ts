@@ -1,5 +1,5 @@
 "use server";
-import { db, firebaseAdmin, firestore } from "@/lib/firebase/admin";
+import { db,  firestore } from "@/lib/firebase/admin";
 import { Collections } from "@/lib/firebase/collections";
 import { CreateClient, UpdateClient } from "./types";
 import { ResponseServerAction, StatusServer } from "@/api/types";
@@ -91,7 +91,7 @@ export async function updateClient(
       .collection(Collections.companies)
       .doc(companyId)
       .collection(Collections.clients)
-      .where(firebaseAdmin.firestore.FieldPath.documentId(), "!=", clientId)
+      .where(firestore.FieldPath.documentId(), "!=", clientId)
       .where("phone", "==", client.phone)
       .get();
 

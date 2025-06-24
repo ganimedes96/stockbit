@@ -88,7 +88,6 @@ export function DebtorDetailsModal({
               <Card>
                 <CardContent className="p-4 text-center">
                   <p className="text-sm">Total Devido</p>
-                  {/* CORRIGIDO: Usa o valor da prop, que já está calculado. */}
                   <p className="text-2xl font-bold text-orange-500">
                     {formatCurrency(debtor.totalOwed ?? 0)}
                   </p>
@@ -97,7 +96,6 @@ export function DebtorDetailsModal({
               <Card>
                 <CardContent className="p-4 text-center">
                   <p className="text-sm">Em Atraso</p>
-                  {/* CORRIGIDO: Usa o valor da prop e formata como moeda. */}
                   <p className="text-2xl font-bold text-red-600">
                     {formatCurrency(debtor.overdueAmount)}
                   </p>
@@ -106,7 +104,6 @@ export function DebtorDetailsModal({
               <Card>
                 <CardContent className="p-4 text-center flex flex-col items-center justify-center h-full">
                   <p className="text-sm">Status Geral</p>
-                  {/* CORRIGIDO: Usa o valor da prop. */}
                   <Badge
                     className="mt-1 text-base"
                     variant={
@@ -120,7 +117,6 @@ export function DebtorDetailsModal({
             </div>
             <h2 className="text-xl font-medium ">Histórico de Vendas</h2>
            {detailedDebts && detailedDebts.length > 0 ? (
-              // CASO 1: Se HÁ dívidas, mostra a lista com rolagem
               <ScrollArea className="h-[450px] w-full">
                 <div className="space-y-4 pr-4">
                     {detailedDebts.map((d, index) => (
@@ -136,7 +132,6 @@ export function DebtorDetailsModal({
                 <ScrollBar orientation="vertical" />
               </ScrollArea>
             ) : (
-              // CASO 2: Se NÃO HÁ dívidas, mostra a mensagem e o ícone
               <div className="flex flex-col items-center justify-center text-center p-8 border-2 border-dashed rounded-lg h-48">
                 <CheckCircle2 className="h-12 w-12 text-green-500 mb-4" />
                 <p className="text-lg font-medium">Tudo em ordem!</p>

@@ -8,7 +8,7 @@ import {
   updateDebtStatusCashPayment,
   updateInstallmentStatus,
 } from "./action";
-import { DebdorsCreate, Debtors, StatusDebtor } from "./types";
+import { DebdorsCreate, StatusDebtor } from "./types";
 import { getDebtors, getDebtorsByClientId } from "./client";
 import { toast } from "sonner";
 
@@ -23,7 +23,11 @@ export const useCreateDebtor = (companyId: string) => {
       await handleServerActionResponse(
         queryClient,
         response,
-        [QueryKeys.debtors],
+        [ 
+          QueryKeys.debtors,
+          QueryKeys.movements,
+          QueryKeys.products
+        ],
         router
       ),
   });
@@ -109,11 +113,11 @@ export const useUpdateDebtStatusCashPayment = (companyId: string) => {
   });
 };
 
-export const useGetDebtors = (companyId: string, initialData?: Debtors[]) => {
+export const useGetDebtors = (companyId: string) => {
   return useQuery({
     queryKey: [QueryKeys.debtors, companyId],
     queryFn: async () => getDebtors(companyId),
-    initialData: initialData,
+    
   });
 };
 
