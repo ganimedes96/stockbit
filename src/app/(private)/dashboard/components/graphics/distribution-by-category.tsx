@@ -41,6 +41,19 @@ type CategoryData = {
   color: string;  
 };
 
+interface CustomPieLabelProps {
+  cx: number;
+  cy: number;
+  midAngle: number;
+  innerRadius: number;
+  outerRadius: number;
+  percent: number;
+  index: number;
+  fill: string;
+  value: number;
+  payload: CategoryData; // O payload contém o item de dados original
+}
+
 export function DistributionByCategory({ user }: DistributionByCategoryProps) {
   const [sortOrder, setSortOrder] = useState("desc");
   const [activeTab, setActiveTab] = useState("bar"); // Começa com o gráfico de barras
@@ -82,7 +95,7 @@ export function DistributionByCategory({ user }: DistributionByCategoryProps) {
   }, [sortedData]);
   
   // Função para renderizar os rótulos customizados do gráfico de pizza
-  const renderCustomPieLabel = (props: any) => {
+  const renderCustomPieLabel = (props: CustomPieLabelProps) => {
     const { cx, cy, midAngle, outerRadius, fill, payload, percent, value } = props;
     const RADIAN = Math.PI / 180;
     const sin = Math.sin(-RADIAN * midAngle);
