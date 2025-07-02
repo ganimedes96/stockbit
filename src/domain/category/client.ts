@@ -38,7 +38,6 @@ export async function getCategories(companyId: string): Promise<Category[]> {
   }
 }
 
-
 export async function getCategoryById(companyId: string, categoryId: string) {
   try {
     const categoryRef = doc(
@@ -49,10 +48,16 @@ export async function getCategoryById(companyId: string, categoryId: string) {
       categoryId
     );
     const categoryDoc = await getDoc(categoryRef);
-    if (!categoryDoc.exists) return null;
+    if (!categoryDoc.exists()) return null;
     const category = categoryDoc.data();
     if (!category) return null;
-    return category;
+    return {
+      name: category.name || "",
+      description: category.description || "",
+      id: categoryDoc.id,
+      createdAt: category.createdAt.toDate(),
+      updatedAt: category.updatedAt?.toDate(),
+    };
   } catch (error) {
     console.error(error);
     throw new Error("Erro ao buscar categoria");

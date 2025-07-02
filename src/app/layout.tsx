@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/providers/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import QueryProvider from "@/providers/query-provider";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import { CartProvider } from "@/providers/cart-context";
 
 const PJS = Plus_Jakarta_Sans({ subsets: ["latin"] });
 
@@ -70,8 +71,10 @@ export default function RootLayout({
         >
           <QueryProvider>
             <AuthProvider>
-              <SpeedInsights />
-              {children}
+              <CartProvider>
+                <SpeedInsights />
+                {children}
+              </CartProvider>
             </AuthProvider>
           </QueryProvider>
           <Toaster />

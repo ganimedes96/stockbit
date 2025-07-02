@@ -112,6 +112,7 @@ export function DebtCard({
     [PaymentMethod.cash]: "Dinheiro",
     [PaymentMethod.pix]: "Pix",
     [PaymentMethod.creditCard]: "Cartão de Crédito",
+    [PaymentMethod.debitCard]: "Cartão de Débito",
     [PaymentMethod.transfer]: "Transferência",
   };
 

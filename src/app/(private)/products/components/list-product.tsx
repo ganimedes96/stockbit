@@ -9,7 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useProductList } from "@/domain/product/queries";
+import { useProductList, useUpdateStatusProduct } from "@/domain/product/queries";
 import { AlertTriangle, Filter, Search, SquarePen } from "lucide-react";
 
 import { useMemo, useState } from "react";
@@ -36,6 +36,7 @@ import { formatCurrency } from "@/utils/text/format";
 import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { ScrollBar } from "@/components/ui/scroll-area";
 import { useDebounce } from "@/hooks/use-debounce";
+import { StatusSwitch } from "@/components/status-switch";
 
 interface ListProductProps {
   companyId: string;
@@ -49,7 +50,7 @@ export function ListProduct({ companyId, user }: ListProductProps) {
   const [stockStatusFilter, setStockStatusFilter] = useState("all");
   const { data: products, isLoading } = useProductList(companyId);
   const { data: categories } = useCategoryList(companyId);
-
+  const {mutate, isPending} = useUpdateStatusProduct(companyId);
   const getStockStatus = (stock: number, minStock: number) => {
     if (stock <= 0) {
       return { variant: "danger" as const, label: "Esgotado" };
@@ -100,6 +101,13 @@ export function ListProduct({ companyId, user }: ListProductProps) {
       return matchesSearch && matchesCategory && matchesStockStatus;
     });
   }, [products, debouncedSearchQuery, selectedCategory, stockStatusFilter]);
+
+   const handleMutate = (data: { id: string; status: boolean }) => {
+    mutate({
+      productId: data.id,
+      status: data.status,
+    });
+  };
 
   return (
     <div className="flex flex-col gap-4 p-6">
@@ -287,6 +295,13 @@ export function ListProduct({ companyId, user }: ListProductProps) {
                       <TableCell>
                         {/* <Button variant="ghost" icon={<SquarePen />}></Button> */}
                         <div className="flex items-center justify-center gap-3">
+                         <StatusSwitch
+                            entity={product}
+                            mutate={handleMutate}
+                            isPending={isPending}
+                            statusKey={"isActive"}
+                         />
+                         
                           <FormSheet
                             title="Editar Produto"
                             description="Editar produto no estoque"

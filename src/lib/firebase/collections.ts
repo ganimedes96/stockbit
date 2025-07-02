@@ -2,6 +2,8 @@ export enum Collections {
   users = "users",
   suppliers = "suppliers",
   debtors = "debtors",
+  orders = "orders",
+  neighborhoods = "neighborhoods",
   movements = "movements",
   categories = "categories",
   companies = "companies",

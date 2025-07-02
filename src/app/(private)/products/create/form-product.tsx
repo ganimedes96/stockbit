@@ -13,7 +13,7 @@ import { FormCategory } from "@/app/(private)/category/components/form-category"
 import { useCategoryList } from "@/domain/category/queries";
 import { ControlledCombobox } from "@/components/form/controllers/controlled-combobox";
 import { useSupplierList } from "@/domain/supplier/queries";
-import { FormSupplier } from "@/app/(private)/(supplier)/components/form-supplier";
+import { FormSupplier } from "@/app/(private)/supplier/components/form-supplier";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMemo } from "react";
 import { Dices } from "lucide-react";

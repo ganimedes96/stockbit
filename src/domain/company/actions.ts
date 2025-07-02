@@ -22,6 +22,7 @@ export async function CreateCompany(data: Partial<CreateUser>) {
       password: data.password,
       company: {
         ...data.company,
+        slug: data.company?.slug ?? "",
         cnpj: data.company?.cnpj ?? "",
       },
       role: "admin",

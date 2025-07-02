@@ -5,7 +5,7 @@ import { Product } from "../product/types";
 export type Category = {
   id: string;
   name: string;
-  description?: string | undefined;
+  description?: string;
   createdAt: Date;
   updatedAt?: Date;
 };

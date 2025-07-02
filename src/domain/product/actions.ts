@@ -226,3 +226,26 @@ export async function UpdateSatusProduct(
   }
 }
 
+
+
+export async function UpdateFavoriteProduct(companyId: string, productId: string, isFavorite: boolean) {
+  try {
+    await db
+      .collection(Collections.companies)
+      .doc(companyId)
+      .collection(Collections.products)
+      .doc(productId)
+      .update({ isFavorite });
+    return {
+      status: StatusServer.success,
+      message: `Produto ${isFavorite ? "favoritado" : "removido dos favoritos"}`,
+    };
+  } catch (error) {
+    const err = error as Error;
+    return {
+      status: StatusServer.error,
+      message: err.message,
+    };
+    }
+
+}

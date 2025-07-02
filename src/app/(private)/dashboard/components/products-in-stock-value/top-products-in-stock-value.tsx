@@ -8,6 +8,7 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import {
   TableHeader,
   TableRow,
@@ -37,6 +38,7 @@ export function TopProductsInStockValue({
         </CardDescription>
       </CardHeader>
       <CardContent>
+          <ScrollArea className="h-[500px] w-full">
         <Table>
           <TableHeader>
             <TableRow>
@@ -46,35 +48,37 @@ export function TopProductsInStockValue({
               <TableHead>Margem</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody>
-            {data?.length === 0 ? (
-              <div className="text-center">Nenhuma informação encontrada</div>
-            ) : (
-              data?.map((product, index) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    <div>
-                      <p className="font-medium">{product.name}</p>
-                      <p className="text-sm text-gray-500">
-                        SKU: {product.sku}
-                      </p>
-                    </div>
-                  </TableCell>
-                  <TableCell>{product.stock} un</TableCell>
-                  <TableCell>
-                    R${" "}
-                    {product.value.toLocaleString("pt-BR", {
-                      minimumFractionDigits: 2,
-                    })}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{product.margin}%</Badge>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
+            <TableBody>
+              {data?.length === 0 ? (
+                <div className="text-center">Nenhuma informação encontrada</div>
+              ) : (
+                data?.map((product, index) => (
+                  <TableRow key={index}>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{product.name}</p>
+                        <p className="text-sm text-gray-500">
+                          SKU: {product.sku}
+                        </p>
+                      </div>
+                    </TableCell>
+                    <TableCell>{product.stock} un</TableCell>
+                    <TableCell>
+                      R${" "}
+                      {product.value.toLocaleString("pt-BR", {
+                        minimumFractionDigits: 2,
+                      })}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="secondary">{product.margin}%</Badge>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
         </Table>
+            <ScrollBar orientation="vertical" />
+          </ScrollArea>
       </CardContent>
     </Card>
   );

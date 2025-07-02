@@ -3,6 +3,8 @@ export enum QueryKeys {
   metricsByCategory = "metricsByCategory",
   topProductsInStockValue= "topProductsInStockValue",
   clients = "clients",
+  orders = "orders",
+  neighborhoods = "neighborhoods",
   categories = "categories",
   suppliers = "suppliers",
   movements = "movements",

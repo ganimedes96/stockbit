@@ -18,6 +18,7 @@ const publicRoutes: PublicRoute[] = [
   { path: "/verify-account", whenAuthed: "not-redirect" },
   { path: "/forgot-password", whenAuthed: "not-redirect" },
   { path: "/reset-password", whenAuthed: "not-redirect" },
+  { path: "/catalog", whenAuthed: "not-redirect", matchSubPaths: true },
   { path: "/policy-and-privacy", whenAuthed: "not-redirect" },
   { path: "/terms", whenAuthed: "not-redirect" },
 ] as const;
@@ -26,6 +27,7 @@ const publicRoutes: PublicRoute[] = [
 const employeeRoutes = [
   "/verify-account",
   "/",
+  "/catalog",
   "/policy-and-privacy",
   "/terms",
   "/reset-password",
@@ -64,22 +66,20 @@ export default async function middleware(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
   console.log("Token found:", token);
-  
 
   const userRole = token.role as string;
 
   if (userRole === "admin") {
-    console.log("User is an admin");
-    
+
     // if (token.emailVerified === false && !publicRoute) {
     //   console.log("Email not verified, redirecting to verify account");
-      
+
     //   const redirectUrl = request.nextUrl.clone();
     //   redirectUrl.pathname = "/dashboard";
     //   return NextResponse.redirect(redirectUrl);
     // }
     console.log("User is an admin and email is verified");
-    
+
     return NextResponse.next();
   }
 

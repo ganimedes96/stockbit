@@ -11,7 +11,7 @@ import { ControlledCombobox } from "@/components/form/controllers/controlled-com
 import { useCategoryList } from "@/domain/category/queries";
 import { FormSheet } from "@/components/form/containers/form-sheet";
 import { FormCategory } from "@/app/(private)/category/components/form-category";
-import { FormSupplier } from "@/app/(private)/(supplier)/components/form-supplier";
+import { FormSupplier } from "@/app/(private)/supplier/components/form-supplier";
 import { useSupplierList } from "@/domain/supplier/queries";
 import { useEffect, useMemo } from "react";
 import { Product } from "@/domain/product/types";

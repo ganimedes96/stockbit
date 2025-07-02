@@ -5,6 +5,7 @@ export type Product = {
   sku?: string;
   description?: string;
   isActive: boolean;
+  isFavorite?: boolean;
   categoryId: string;
   supplierId?: string;
   salePrice: number;

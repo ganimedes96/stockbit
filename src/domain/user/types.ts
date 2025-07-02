@@ -2,6 +2,7 @@ export interface Company {
   id: string;
   name: string;
   email?: string;
+  slug?: string;
   phone?: string;
   address: string;
   cnpj?: string;
@@ -58,6 +59,7 @@ export interface CreateUser extends Customer {
   role: "admin" | "employee";
   company: {
     name: string;
+    slug?: string;
     email?: string;
     address: string;
     cnpj?: string;

@@ -10,6 +10,7 @@ export enum Payment {
 export enum PaymentMethod {
   cash = "cash",
   pix = "pix",
+  debitCard = "debitCard",
   creditCard = "creditCard",
   transfer = "transfer",
 }

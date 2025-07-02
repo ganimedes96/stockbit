@@ -7,16 +7,16 @@ import { getProductById, getProducts } from "./client";
 import {
   CreateProduct,
   DeleteProduct,
+  UpdateFavoriteProduct,
   UpdateProduct,
   UpdateSatusProduct,
 } from "./actions";
 import { getProductsServer } from "./server";
 
-export const useProductList = (companyId: string, initialData?: Product[]) => {
+export const useProductList = (companyId: string) => {
   return useQuery({
     queryKey: [QueryKeys.products, companyId],
     queryFn: async () => getProducts(companyId),
-    initialData: initialData,
   });
 };
 
@@ -65,11 +65,10 @@ export const useDeleteProduct = (companyId: string, productId: string) => {
 
 export const useUpdateStatusProduct = (
   companyId: string,
-  productId: string
 ) => {
   const queryProduct = useQueryClient();
-  return useMutation<ResponseServerAction, Error, boolean>({
-    mutationFn: async (status: boolean) =>
+  return useMutation<ResponseServerAction, Error, { status: boolean; productId: string }>({
+    mutationFn: async ({status, productId}: {status: boolean, productId: string}) =>
       await UpdateSatusProduct(companyId, productId, status),
     onSuccess: async (response) =>
       await handleServerActionResponse(queryProduct, response, [
@@ -84,3 +83,18 @@ export const useGetProductsServer = (companyId: string) => {
     queryFn: async () => getProductsServer(companyId),
   });
 };
+
+
+export const useUpdateFavoriteProduct = (
+  companyId: string,
+) => {
+  const queryProduct = useQueryClient();
+  return useMutation<ResponseServerAction, Error, { productId: string; isFavorite: boolean }>({
+    mutationFn: async ({ productId, isFavorite }) =>
+      await UpdateFavoriteProduct(companyId, productId, isFavorite),
+    onSuccess: async (response) =>
+      await handleServerActionResponse(queryProduct, response, [
+        QueryKeys.products,
+      ]),
+  });
+}

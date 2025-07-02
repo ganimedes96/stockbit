@@ -21,10 +21,10 @@ export const useCategoryList = (
 export const useGetCategoryById = (companyId: string, categoryId: string) => {
   return useQuery({
     queryKey: [QueryKeys.categories, companyId, categoryId],
-    queryFn: async () => getCategoryById(companyId, categoryId),
+    queryFn: () => getCategoryById(companyId, categoryId),
+    enabled: !!companyId && !!categoryId, 
   });
-}
-
+};
 export const useCreateCategory = (companyId: string) => {
   const queryCategory = useQueryClient();
   const router = useRouter();
@@ -54,12 +54,10 @@ export const useUpdateCategory = (companyId: string) => {
   });
 };
 
-
 export const useDeleteCategory = (companyId: string, categoryId: string) => {
   const queryCategory = useQueryClient();
   return useMutation<ResponseServerAction, Error, string>({
-    mutationFn: async () =>
-      await DeleteCategory(companyId, categoryId),
+    mutationFn: async () => await DeleteCategory(companyId, categoryId),
     onSuccess: async (response) =>
       await handleServerActionResponse(queryCategory, response, [
         QueryKeys.categories,

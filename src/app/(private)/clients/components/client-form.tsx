@@ -15,6 +15,7 @@ const formSchema = z.object({
       message: "Email inválido",
     }),
   phone: z.string().min(11, "Telefone inválido"),
+  birthday: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -32,6 +33,7 @@ export function ClientForm({ companyId, onSuccess }: ClientFormProps) {
       name: "",
       email: "",
       phone: "",
+      birthday: "",
     },
   });
 
@@ -67,6 +69,13 @@ export function ClientForm({ companyId, onSuccess }: ClientFormProps) {
         maxLength={80}
       />
 
+      <ControlledInput
+        control={control}
+        name="birthday"
+        label="Aniversário"
+        maskType="date"
+        placeholder="DD/MM/AAAA"
+      />
       <ControlledInput
         control={control}
         name="phone"

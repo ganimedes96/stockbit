@@ -48,8 +48,8 @@ interface HistoryMovimentsProps {
 
 export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
   const [selectStatus, setSelectStatus] = useState("all");
-  const [selectPeriod, setSelectPeriod] = useState<"month" | "day">("month");
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectPeriod, setSelectPeriod] = useState<"month" | "day">("month");
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const { data: movements, isLoading: isLoadingMoviments } = useMovementsFilter(

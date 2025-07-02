@@ -38,6 +38,7 @@ export async function createClient(
 
     const body = {
       ...client,
+      birthday: client.birthday || "",
       createdAt: firestore.Timestamp.now(),
     };
     await db

@@ -23,6 +23,7 @@ import { ControlledInput } from "@/components/form/controllers/controlled-input"
 import { Button } from "@/components/ui/button";
 import { useCreateCompany } from "@/domain/company/queries";
 import { StatusServer } from "@/api/types";
+import { generateSlug } from "@/utils/slug/generate-slug";
 
 const registerSchema = z
   .object({
@@ -90,6 +91,7 @@ export function FormRegister() {
         company: {
           ...data.company,
           cnpj: data.company?.cnpj ?? "",
+          slug: generateSlug(data.company.name),
         },
       },
       {
