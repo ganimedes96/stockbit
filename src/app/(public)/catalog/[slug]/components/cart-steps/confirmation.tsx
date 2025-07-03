@@ -153,7 +153,7 @@ const summary = useMemo(() => {
                 </p>
                 <p>
                   {selectedNeighborhoodName} - {formData?.city},{" "}
-                  {formData?.state.toUpperCase()}
+                  {formData?.state ? formData.state.toUpperCase() : ""}
                 </p>
                 <p>CEP: {formData?.zipCode}</p>
               </div>

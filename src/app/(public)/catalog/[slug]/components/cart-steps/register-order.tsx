@@ -1,7 +1,6 @@
 "use client";
 
-import { forwardRef } from "react";
-import { GlobalFormSheet } from "@/components/form/containers/global-form-sheet";
+import { forwardRef, useState } from "react";
 import { Step } from "@/components/form/containers/step-progress-bar";
 import { useCreateOrder } from "@/domain/orders/queries";
 import { MapIcon, ShoppingBag, CreditCard, CheckCircle } from "lucide-react";
@@ -15,7 +14,7 @@ import { AddressStep } from "./address";
 import { PaymentStep } from "./payment";
 import { ConfirmationStep } from "./confirmation";
 
-import { CheckoutFormValues, finalCheckoutSchema } from "./schema";
+import { CheckoutFormValues } from "./schema";
 import {
   OrderInput,
   OrderStatus,
@@ -24,6 +23,8 @@ import {
   PaymentMethodOrder,
 } from "@/domain/orders/types";
 import { ResponseServerAction, StatusServer } from "@/api/types";
+import { GlobalFormSheet } from "@/components/form/containers/global-form-sheet";
+import { ThankYouModal } from "../thank-you-modal";
 
 interface RegisterOrderProps {
   user: User;
@@ -59,34 +60,23 @@ export function RegisterOrder({ user }: RegisterOrderProps) {
   const { cart, clearCart } = useCart();
   const { mutate } = useCreateOrder(user.company.id);
 
+  const [showThankYou, setShowThankYou] = useState(false);
+
   const steps: Step[] = [
     {
-      id: 0,
+      id: 1,
       name: "Carrinho",
       icon: ShoppingBag,
+
       isStepDisabled: cart.length === 0,
     },
     {
-      id: 1,
+      id: 2,
       name: "Endereço",
       icon: MapIcon,
-      fields: [
-        "paymentMethod",
-        "deliveryMethod",
-        "customerEmail",
-        "customerName",
-        "customerPhone",
-        "zipCode",
-        "street",
-        "number",
-        "complement",
-        "neighborhood",
-        "city",
-        "state",
-      ],
     },
-    { id: 2, name: "Pagamento", icon: CreditCard, fields: ["paymentMethod"] },
-    { id: 3, name: "Finalizar", icon: CheckCircle },
+    { id: 3, name: "Pagamento", icon: CreditCard },
+    { id: 4, name: "Finalizar", icon: CheckCircle },
   ];
 
   const handleOrderSubmit = async (
@@ -149,6 +139,8 @@ export function RegisterOrder({ user }: RegisterOrderProps) {
         onSuccess: (response) => {
           if (response.status === "success") {
             clearCart();
+
+            setShowThankYou(true); // abre o dialog
           }
           resolve(response);
         },
@@ -165,21 +157,23 @@ export function RegisterOrder({ user }: RegisterOrderProps) {
   };
 
   return (
-    <GlobalFormSheet<CheckoutFormValues, ResponseServerAction>
-      sheetTitle="Carrinho de Compras"
-      sheetDescription="Siga os passos para concluir sua compra"
-      buttonTitle="Finalizar Pedido"
-      schema={finalCheckoutSchema}
-      initialData={checkoutInitialData}
-      onSubmit={handleOrderSubmit}
-      steps={steps}
-      customTrigger={<CartButton />}
-      resetOnClose={true}
-    >
-      <CartProductsList />
-      <AddressStep user={user} />
-      <PaymentStep />
-      <ConfirmationStep user={user} />
-    </GlobalFormSheet>
+    <>
+      <GlobalFormSheet
+        initialData={checkoutInitialData}
+        onSubmit={handleOrderSubmit}
+        steps={steps}
+        trigger={<CartButton />}
+      >
+        <CartProductsList />
+        <AddressStep user={user} />
+        <PaymentStep />
+        <ConfirmationStep user={user} />
+      </GlobalFormSheet>
+      <ThankYouModal
+        show={showThankYou}
+        onClose={() => setShowThankYou(false)}
+        user={user}
+      />
+    </>
   );
 }

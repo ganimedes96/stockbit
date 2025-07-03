@@ -5,15 +5,13 @@ import { useFormContext } from "react-hook-form";
 import { ControlledInput } from "@/components/form/controllers/controlled-input";
 import { ControlledSelect } from "@/components/form/controllers/controlled-select"; // Supondo que você tenha este componente
 
-import { z } from "zod";
-import { finalCheckoutSchema } from "./schema";
 import { ControlledRadioGroup } from "@/components/form/controllers/controlled-radio-group";
 import { House, MapPin } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useGetNeighborhoods } from "@/domain/neighborhoods/queries";
 import { User } from "@/domain/user/types";
 
-export type AddressFormValues = z.infer<typeof finalCheckoutSchema>;
+
 
 const CUSTOMER_DATA_KEY = "checkoutCustomerData";
 interface NeighborhoodProps {
@@ -23,7 +21,7 @@ interface NeighborhoodProps {
 export function AddressStep({ user }: NeighborhoodProps) {
   // PASSO 2: Pegamos tudo o que precisamos do contexto do formulário pai.
   // O <FormProvider> no GlobalFormSheet garante que isso funcione.
-  const { control, watch, setValue } = useFormContext<AddressFormValues>();
+  const { control, watch, setValue } = useFormContext();
   const { data: neighborhoodOptions } = useGetNeighborhoods(user.company.id);
   const [isFetchingAddress, setIsFetchingAddress] = useState(false);
 
@@ -60,19 +58,24 @@ export function AddressStep({ user }: NeighborhoodProps) {
   }, [setValue]);
 
   useEffect(() => {
-    // Este efeito observa as mudanças nos dados do endereço
-    const subscription = watch((value, { name }) => {
-      // Se um campo dentro de 'shippingAddress' mudou, salvamos o objeto inteiro.
-      if (name?.startsWith("shippingAddress")) {
-        localStorage.setItem(
-          CUSTOMER_DATA_KEY,
-          JSON.stringify(value)
-        );
-      }
-    });
-    // Limpa a inscrição quando o componente é desmontado
-    return () => subscription.unsubscribe();
-  }, [watch]);
+  const subscription = watch((value) => {
+    const toSave = {
+      customerName: value.customerName,
+      customerEmail: value.customerEmail,
+      customerPhone: value.customerPhone,
+      zipCode: value.zipCode,
+      street: value.street,
+      number: value.number,
+      complement: value.complement,
+      neighborhood: value.neighborhood,
+      city: value.city,
+      state: value.state,
+    };
+    localStorage.setItem(CUSTOMER_DATA_KEY, JSON.stringify(toSave));
+  });
+
+  return () => subscription.unsubscribe();
+}, [watch]);
 
   const deliveryMethod = watch("deliveryMethod");
   const zipCode = watch("zipCode");
@@ -144,6 +147,8 @@ export function AddressStep({ user }: NeighborhoodProps) {
               />
               <ControlledInput
                 control={control}
+                required
+                rules={{ required: "O telefone do cliente é obrigatório" }}
                 name="customerPhone"
                 label="Telefone (Whatsapp) *"
                 maskType="phoneMobile"
@@ -155,6 +160,8 @@ export function AddressStep({ user }: NeighborhoodProps) {
           <div className="md:col-span-2">
             <ControlledInput
               control={control}
+              required
+              rules={{ required: "O CEP é obrigatório" }}
               name="zipCode"
               label="CEP *"
               maskType="cep"
@@ -164,6 +171,8 @@ export function AddressStep({ user }: NeighborhoodProps) {
           <div className="md:col-span-4">
             <ControlledInput
               control={control}
+              required
+              rules={{ required: "A rua ou avenida é obrigatória" }}
               name="street"
               label="Rua / Avenida *"
               placeholder="Ex: Av. Paulista"
@@ -173,6 +182,8 @@ export function AddressStep({ user }: NeighborhoodProps) {
           <div className="md:col-span-2">
             <ControlledInput
               control={control}
+              required
+              rules={{ required: "O número é obrigatório" }}
               name="number"
               label="Número *"
               placeholder="Ex: 123"
@@ -189,6 +200,8 @@ export function AddressStep({ user }: NeighborhoodProps) {
           <div className="md:col-span-2">
             <ControlledSelect
               control={control}
+              
+              rules={{ required: "O bairro é obrigatório" }}
               name="neighborhood"
               label="Bairro *"
               placeholder="Selecione um bairro"
@@ -209,6 +222,8 @@ export function AddressStep({ user }: NeighborhoodProps) {
             <ControlledInput
               placeholder="Ex: São Paulo"
               control={control}
+              rules={{ required: "A cidade é obrigatória" }}
+              required
               name="city"
               label="Cidade *"
               disabled={isFetchingAddress}
@@ -218,6 +233,8 @@ export function AddressStep({ user }: NeighborhoodProps) {
             <ControlledInput
               placeholder="Ex: SP"
               control={control}
+              rules={{ required: "O estado é obrigatório" }}
+              required
               name="state"
               label="Estado (UF) *"
               disabled={isFetchingAddress}
@@ -247,6 +264,8 @@ export function AddressStep({ user }: NeighborhoodProps) {
             <div className="md:col-span-2">
               <ControlledInput
                 control={control}
+                required
+                rules={{ required: "O nome é obrigatório" }}
                 name="customerName"
                 label="Nome de quem irá retirar *"
                 placeholder="Ex: João da Silva"
@@ -255,6 +274,8 @@ export function AddressStep({ user }: NeighborhoodProps) {
 
             <ControlledInput
               control={control}
+              required
+              rules={{ required: "O telefone do cliente é obrigatório" }}
               name="customerPhone"
               label="Telefone (Whatsapp) *"
               maskType="phoneMobile"

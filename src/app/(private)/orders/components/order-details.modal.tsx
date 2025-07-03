@@ -41,10 +41,6 @@ import {
   generatePickupReadyMessage,
   generateShippedMessage,
 } from "./helpers";
-import {
-  useGetNeighborhoodById,
-  useGetNeighborhoods,
-} from "@/domain/neighborhoods/queries";
 import { useMemo } from "react";
 import { Neighborhood } from "@/domain/neighborhoods/types";
 
@@ -71,10 +67,6 @@ export function OrderDetailsModal({
   open,
   setOpen,
 }: OrderDetailsModalProps) {
-  if (!order) return null; // Não renderiza nada se não houver um pedido selecionado
-
-  const statusInfo = orderStatusMap[order.status];
-
   const selectedNeighborhood = useMemo(() => {
     if (
       !order?.shippingAddress ||
@@ -88,6 +80,8 @@ export function OrderDetailsModal({
     );
   }, [order, neighborhoods]);
 
+  if (!order) return null; // Não renderiza nada se não houver um pedido selecionado
+  const statusInfo = orderStatusMap[order.status];
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogContent className="sm:max-w-3xl">
