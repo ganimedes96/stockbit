@@ -119,7 +119,7 @@ type ConfirmationState = {
 } | null;
 
 export function OrdersList({ user }: OrderProps) {
-  const [selectStatus, setSelectStatus] = useState("all");
+  const [selectStatus, setSelectStatus] = useState("today");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [confirmationState, setConfirmationState] =
@@ -212,112 +212,110 @@ export function OrdersList({ user }: OrderProps) {
               </Select>
             </div>
 
-            <Card >
-              <ScrollArea className="max-h-[500px]">
-                <div className="min-w-[800px]">
-                  <Table>
-                    <TableHeader className="bg-muted sticky top-0 z-10">
-                      <TableRow>
-                        <TableHead className="text-center">Pedido</TableHead>
-                        <TableHead className="text-center">Cliente</TableHead>
-                        <TableHead className="text-center">Data</TableHead>
-                        <TableHead className="text-center">Status</TableHead>
-                        <TableHead className="text-center">Total</TableHead>
-                        <TableHead className="text-center">Ações</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {isLoading ? (
-                        <TableSkeleton columns={6} rows={10} />
-                      ) : (filteredOrders ?? []).length > 0 ? (
-                        (filteredOrders ?? []).map((order: Order) => {
-                          const statusInfo = orderStatusMap[
-                            order.status as OrderStatus
-                          ] || {
-                            label: "Desconhecido",
-                            color: "bg-gray-100 text-gray-800",
-                            icon: AlertCircle,
-                          };
-                          return (
-                            <TableRow key={order.id}>
-                              <TableCell className="font-mono text-sm text-center">
-                                {order.orderNumber}
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <div className="font-medium">
-                                  {order.customerName}
-                                </div>
-                                <div className="text-xs text-muted-foreground">
-                                  {order.customerEmail}
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-center">
-                                {format(order.createdAt, "dd/MM/yyyy - HH:mm")}
-                              </TableCell>
-                              <TableCell className="text-center">
-                                {/* 2. Badge atualizado para usar o novo mapa de status */}
-                                <Badge
-                                  variant="outline"
-                                  className={`font-semibold ${statusInfo.color}`}
-                                >
-                                  <statusInfo.icon className="w-3 h-3 mr-2" />
-                                  {statusInfo.label}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-center font-medium">
-                                {formatCurrency(order.total)}
-                              </TableCell>
-                              <TableCell className="gap-2 flex flex-row items-center justify-center">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => setSelectedOrder(order)}
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                                <Select
-                                  value={order.status}
-                                  onValueChange={(newStatus) =>
-                                    handleStatusChange(
-                                      order,
-                                      newStatus as OrderStatus
+            <Card>
+              <ScrollArea className="border rounded-md h-[500px]">
+                <Table>
+                  <TableHeader className="bg-muted sticky top-0 z-10">
+                    <TableRow>
+                      <TableHead className="text-center">Pedido</TableHead>
+                      <TableHead className="text-center">Cliente</TableHead>
+                      <TableHead className="text-center">Data</TableHead>
+                      <TableHead className="text-center">Status</TableHead>
+                      <TableHead className="text-center">Total</TableHead>
+                      <TableHead className="text-center">Ações</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoading ? (
+                      <TableSkeleton columns={6} rows={10} />
+                    ) : (filteredOrders ?? []).length > 0 ? (
+                      (filteredOrders ?? []).map((order: Order) => {
+                        const statusInfo = orderStatusMap[
+                          order.status as OrderStatus
+                        ] || {
+                          label: "Desconhecido",
+                          color: "bg-gray-100 text-gray-800",
+                          icon: AlertCircle,
+                        };
+                        return (
+                          <TableRow key={order.id}>
+                            <TableCell className="font-mono text-sm text-center">
+                              {order.orderNumber}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              <div className="font-medium">
+                                {order.customerName}
+                              </div>
+                              <div className="text-xs text-muted-foreground">
+                                {order.customerEmail}
+                              </div>
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {format(order.createdAt, "dd/MM/yyyy - HH:mm")}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {/* 2. Badge atualizado para usar o novo mapa de status */}
+                              <Badge
+                                variant="outline"
+                                className={`font-semibold ${statusInfo.color}`}
+                              >
+                                <statusInfo.icon className="w-3 h-3 mr-2" />
+                                {statusInfo.label}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-center font-medium">
+                              {formatCurrency(order.total)}
+                            </TableCell>
+                            <TableCell className="gap-2 flex flex-row items-center justify-center">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSelectedOrder(order)}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                              <Select
+                                value={order.status}
+                                onValueChange={(newStatus) =>
+                                  handleStatusChange(
+                                    order,
+                                    newStatus as OrderStatus
+                                  )
+                                }
+                                disabled={isPending}
+                              >
+                                <SelectTrigger className=" h-9 ">
+                                  <SelectValue placeholder="Alterar status" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  {Object.entries(orderStatusMap).map(
+                                    ([key, value]) => (
+                                      <SelectItem key={key} value={key}>
+                                        {value.label}
+                                      </SelectItem>
                                     )
-                                  }
-                                  disabled={isPending}
-                                >
-                                  <SelectTrigger className=" h-9 ">
-                                    <SelectValue placeholder="Alterar status" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {Object.entries(orderStatusMap).map(
-                                      ([key, value]) => (
-                                        <SelectItem key={key} value={key}>
-                                          {value.label}
-                                        </SelectItem>
-                                      )
-                                    )}
-                                  </SelectContent>
-                                </Select>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })
-                      ) : (
-                        <TableRow>
-                          <TableCell
-                            colSpan={6}
-                            className="h-48 text-center text-muted-foreground"
-                          >
-                            <Package className="mx-auto mb-2 h-8 w-8" />
-                            Nenhum pedido encontrado com os filtros aplicados.
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
+                                  )}
+                                </SelectContent>
+                              </Select>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })
+                    ) : (
+                      <TableRow>
+                        <TableCell
+                          colSpan={6}
+                          className="h-48 text-center text-muted-foreground"
+                        >
+                          <Package className="mx-auto mb-2 h-8 w-8" />
+                          Nenhum pedido encontrado com os filtros aplicados.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+
                 <ScrollBar orientation="vertical" />
-                <ScrollBar orientation="horizontal" />
               </ScrollArea>
             </Card>
           </CardContent>

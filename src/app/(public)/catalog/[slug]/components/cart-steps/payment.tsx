@@ -10,6 +10,7 @@ import { CircleDollarSign, CreditCard, QrCode } from "lucide-react";
 
 // Os dados para as opções do RadioGroup
 const paymentOptions = [
+  { value: PaymentMethodOrder.pix, label: "Pix", icon: QrCode },
   {
     value: PaymentMethodOrder.creditCard,
     label: "Cartão de Crédito",
@@ -20,7 +21,6 @@ const paymentOptions = [
     label: "Cartão de Débito",
     icon: CreditCard,
   },
-  { value: PaymentMethodOrder.pix, label: "Pix", icon: QrCode },
   { value: PaymentMethodOrder.cash, label: "Dinheiro", icon: CircleDollarSign },
 ];
 

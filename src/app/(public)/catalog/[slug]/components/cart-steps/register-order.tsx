@@ -1,6 +1,6 @@
 "use client";
 
-import { forwardRef, useState } from "react";
+import { forwardRef, useRef, useState } from "react";
 import { Step } from "@/components/form/containers/step-progress-bar";
 import { useCreateOrder } from "@/domain/orders/queries";
 import { MapIcon, ShoppingBag, CreditCard, CheckCircle } from "lucide-react";
@@ -61,13 +61,13 @@ export function RegisterOrder({ user }: RegisterOrderProps) {
   const { mutate } = useCreateOrder(user.company.id);
 
   const [showThankYou, setShowThankYou] = useState(false);
+  const sheetRef = useRef<{ close: () => void }>(null);
 
   const steps: Step[] = [
     {
       id: 1,
       name: "Carrinho",
       icon: ShoppingBag,
-
       isStepDisabled: cart.length === 0,
     },
     {
@@ -139,8 +139,8 @@ export function RegisterOrder({ user }: RegisterOrderProps) {
         onSuccess: (response) => {
           if (response.status === "success") {
             clearCart();
-
-            setShowThankYou(true); // abre o dialog
+            setShowThankYou(true);
+            sheetRef.current?.close(); // fecha o sheet no sucesso
           }
           resolve(response);
         },
@@ -160,9 +160,9 @@ export function RegisterOrder({ user }: RegisterOrderProps) {
     <>
       <GlobalFormSheet
         initialData={checkoutInitialData}
-        onSubmit={handleOrderSubmit}
         steps={steps}
         trigger={<CartButton />}
+        onSubmit={handleOrderSubmit}
       >
         <CartProductsList />
         <AddressStep user={user} />

@@ -31,13 +31,23 @@ export function ThankYouModal({ show, onClose, user }: ThankYouModalProps) {
 
   return (
     <Dialog open={show} onOpenChange={onClose}>
-      <DialogContent>
+      <DialogContent
+        className="
+          sm:max-w-lg
+          w-[90%]
+          sm:w-full
+          rounded-xl
+          p-6
+        "
+      >
         <DialogHeader>
-          <DialogTitle>Obrigado pela sua compra, {customerName || "Cliente"}! 🎉</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl text-center">
+            Obrigado pela sua compra, {customerName || "Cliente"}! 🎉
+          </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-2">
-          <p className="text-muted-foreground">
+        <div className="space-y-2 text-sm sm:text-base">
+          <p className="text-muted-foreground text-center">
             Seu pedido foi recebido com sucesso e em breve entraremos em contato para confirmar os detalhes.
           </p>
 

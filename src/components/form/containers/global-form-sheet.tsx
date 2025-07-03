@@ -37,20 +37,21 @@ export function GlobalFormSheet<
   buttonTitle = "Finalizar",
   reset = true,
   triggerTitle = "Abrir formulário",
-  trigger, // aqui!
+  trigger,
 }: FormProps<T, R>) {
   const methods = useForm<T>({
     defaultValues: initialData as DefaultValues<T>,
     mode: "onChange",
   });
 
+  const [currentStep, setCurrentStep] = useState(0);
+  const [open, setOpen] = useState(false);
+
   useEffect(() => {
     if (initialData) {
       methods.reset(initialData as DefaultValues<T>);
     }
   }, [initialData, methods]);
-
-  const [currentStep, setCurrentStep] = useState(0);
 
   const goToPreviousStep = () => {
     if (currentStep > 0) setCurrentStep(currentStep - 1);
@@ -79,6 +80,7 @@ export function GlobalFormSheet<
         if (steps.length > 0) {
           setCurrentStep(0);
         }
+        setOpen(false); // fecha o Sheet ao finalizar com sucesso
       }
     } catch (error) {
       console.error(error);
@@ -87,7 +89,7 @@ export function GlobalFormSheet<
   });
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         {trigger ?? <Button>{triggerTitle}</Button>}
       </SheetTrigger>
@@ -95,11 +97,10 @@ export function GlobalFormSheet<
       <SheetContent className="overflow-y-auto sm:max-w-[600px] w-full">
         <SheetHeader className="flex flex-col gap-4">
           <div>
-            
-          <SheetTitle>Carrinho de Compras</SheetTitle>
-          <SheetDescription>
-            Siga os passos abaixo para finalizar a compra
-          </SheetDescription>
+            <SheetTitle>Carrinho de Compras</SheetTitle>
+            <SheetDescription>
+              Siga os passos abaixo para finalizar a compra
+            </SheetDescription>
           </div>
           {steps.length > 0 && (
             <StepProgressBar currentStep={currentStep} steps={steps} />
@@ -142,7 +143,6 @@ export function GlobalFormSheet<
                   onClick={handleSubmitForm}
                   className="w-full"
                   disabled={methods.formState.isSubmitting}
-                  loading={methods.formState.isSubmitting}
                   titleLoading="Finalizando..."
                 >
                   {buttonTitle}
