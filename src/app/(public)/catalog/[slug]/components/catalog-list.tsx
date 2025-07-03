@@ -186,7 +186,7 @@ export function CatalogList({ user }: CatalogListProps) {
       )}
       {viewMode === "list" ? (
         <div className="flex flex-col w-full  gap-2 sm:gap-4  sm:px-0">
-          {activeProducts.map((product) => (
+          {processedProducts.map((product) => (
             <List
               key={product.id}
               product={product}
