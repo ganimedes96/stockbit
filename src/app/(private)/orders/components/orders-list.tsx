@@ -63,6 +63,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { OrderDetailsModal } from "./order-details.modal";
+import { useGetNeighborhoods } from "@/domain/neighborhoods/queries";
 
 // 1. Dicionário de status atualizado com label, classes de cor e ícones
 export const orderStatusMap: Record<
@@ -124,6 +125,7 @@ export function OrdersList({ user }: OrderProps) {
     useState<ConfirmationState>(null);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
+    const { data: neighborhoods} = useGetNeighborhoods(user.company.id);
 
   const { data: filteredOrders, isLoading } = useRealtimeOrders(
     user.company.id,
@@ -132,6 +134,7 @@ export function OrdersList({ user }: OrderProps) {
       search: debouncedSearchTerm,
     }
   );
+
   const { mutate, isPending } = useUpdatOrderStatus(user.company.id);
 
   const handleStatusChange = (order: Order, newStatus: OrderStatus) => {
@@ -341,6 +344,7 @@ export function OrdersList({ user }: OrderProps) {
       </AlertDialog>
 
       <OrderDetailsModal
+        neighborhoods={neighborhoods ?? []}
         order={selectedOrder}
         open={!!selectedOrder}
         setOpen={() => setSelectedOrder(null)}

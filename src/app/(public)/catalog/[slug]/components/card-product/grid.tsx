@@ -85,6 +85,7 @@ export function Grid({
           className="w-full disabled:bg-gray-300/20 disabled:text-gray-500 disabled:cursor-not-allowed"
           onClick={() => onAddToCart(product)}
           size="sm"
+          type="button"
         >
           <Plus className="h-4 w-4 mr-1" />
           Adicionar

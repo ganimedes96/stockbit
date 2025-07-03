@@ -69,12 +69,28 @@ export const useUpdateNeighborhoodStatus = ( companyId: string ) => {
 }
 
 
-export const useGetNeighborhoodById = (companyId: string, neighborhoodId: string) => {
+interface NeighborhoodQueryOptions {
+  enabled?: boolean;
+}
+
+export const useGetNeighborhoodById = (
+  companyId: string,
+  neighborhoodId: string,
+  // 1. Adicionamos um terceiro parâmetro opcional para as opções
+  options?: NeighborhoodQueryOptions
+) => {
   return useQuery({
     queryKey: [QueryKeys.neighborhoods, companyId, neighborhoodId],
     queryFn: async () => {
+      // A queryFn só será executada se 'enabled' for true.
+      // Adicionamos uma verificação para não buscar com um ID vazio.
+      if (!neighborhoodId) return null;
+      
       const neighborhood = await getNeighborhoodById(companyId, neighborhoodId);
       return neighborhood;
     },
+    // 2. A opção 'enabled' recebida é passada diretamente para o useQuery.
+    // Se a opção não for passada, o 'enabled' será 'undefined', e a query rodará por padrão.
+    enabled: options?.enabled,
   });
 };

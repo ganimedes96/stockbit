@@ -41,10 +41,17 @@ import {
   generatePickupReadyMessage,
   generateShippedMessage,
 } from "./helpers";
+import {
+  useGetNeighborhoodById,
+  useGetNeighborhoods,
+} from "@/domain/neighborhoods/queries";
+import { useMemo } from "react";
+import { Neighborhood } from "@/domain/neighborhoods/types";
 
 // Supondo que você criou um arquivo para o mapa
 
 interface OrderDetailsModalProps {
+  neighborhoods: Neighborhood[];
   order: Order | null;
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -59,6 +66,7 @@ const paymentMethodLabels: Record<PaymentMethodOrder, string> = {
 };
 
 export function OrderDetailsModal({
+  neighborhoods,
   order,
   open,
   setOpen,
@@ -66,6 +74,19 @@ export function OrderDetailsModal({
   if (!order) return null; // Não renderiza nada se não houver um pedido selecionado
 
   const statusInfo = orderStatusMap[order.status];
+
+  const selectedNeighborhood = useMemo(() => {
+    if (
+      !order?.shippingAddress ||
+      !order.shippingAddress.neighborhood ||
+      !neighborhoods
+    ) {
+      return null;
+    }
+    return neighborhoods.find(
+      (n) => n.id === order.shippingAddress!.neighborhood
+    );
+  }, [order, neighborhoods]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -117,7 +138,9 @@ export function OrderDetailsModal({
                 </CardHeader>
                 <CardContent>
                   <p className="text-xl font-bold">
-                    {formatCurrency(order.total)}
+                    {formatCurrency(
+                      order.total + (selectedNeighborhood?.deliveryFee ?? 0)
+                    )}
                   </p>
                 </CardContent>
               </Card>
@@ -132,10 +155,10 @@ export function OrderDetailsModal({
                 <div className="space-y-1 text-muted-foreground">
                   <p>
                     <span className="font-medium">
-                     Nome: {order.customerName}
+                      Nome: {order.customerName}
                     </span>
                   </p>
-                  <p>{order.customerEmail || "E-mail não informado"}</p>
+                  <p>E-mail: {order.customerEmail || "E-mail não informado"}</p>
                   {order.customerPhone && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -192,20 +215,18 @@ export function OrderDetailsModal({
                   {order.shippingAddress ? (
                     <>
                       <p>
-                        {order.shippingAddress.street},{" "}
+                        {order.shippingAddress.street},
                         {order.shippingAddress.number}
                       </p>
                       <p>
-                        {order.shippingAddress.neighborhood} -{" "}
-                        {order.shippingAddress.city},{" "}
+                        {selectedNeighborhood?.name || "Bairro não informado"} -{" "}
+                        {order.shippingAddress.city}
                         {order.shippingAddress.state?.toUpperCase()}
                       </p>
                       <p>CEP: {order.shippingAddress.zipCode}</p>
                     </>
                   ) : (
-                    <p className="font-medium text-primary">
-                      Retirada no Local
-                    </p>
+                    <p className="font-medium text-primary">Retirada na Loja</p>
                   )}
                 </div>
               </div>
@@ -255,6 +276,27 @@ export function OrderDetailsModal({
                 </TableBody>
               </Table>
             </div>
+            {/* <div>
+              <h4 className="font-semibold mb-4">Resumo Financeiro</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span>Subtotal</span>
+                  <span>{formatCurrency(order.subtotal)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Frete</span>
+                  {selectedNeighborhood && typeof selectedNeighborhood.deliveryFee === "number" && selectedNeighborhood.deliveryFee > 0 ? (
+                    <span className="text-green-600 font-semibold">Grátis</span>
+                  ) : (
+                    <span>{formatCurrency(selectedNeighborhood?.deliveryFee)}</span>
+                  )}
+                </div>
+                <div className="flex justify-between font-bold text-lg border-t pt-2 mt-2">
+                  <span>Total</span>
+                  <span>{formatCurrency(order.total)}</span>
+                </div>
+              </div>
+            </div> */}
           </div>
         </ScrollArea>
       </DialogContent>

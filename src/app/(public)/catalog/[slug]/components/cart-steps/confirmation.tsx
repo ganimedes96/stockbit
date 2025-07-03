@@ -37,27 +37,37 @@ export function ConfirmationStep({ user }: ConfirmationStepProps) {
   const formData = watch() as CheckoutFormValues;
   const {data: allNeighborhoods } = useGetNeighborhoods(user.company.id);
   // Calcula o resumo financeiro
-   const summary = useMemo(() => {
-    const subtotal = cart.reduce((acc, item) => acc + item.salePrice * item.quantity, 0);
+const summary = useMemo(() => {
+    // CORREÇÃO 1: Usando 'unitPrice' do CartItem para o cálculo correto.
+    const subtotal = cart.reduce(
+      (acc, item) => acc + item.salePrice * item.quantity,
+      0
+    );
     
     let shippingCost = 0;
     let isFreeShipping = false;
 
-    // Só calcula o frete se for entrega e um bairro for selecionado
-    if (formData.deliveryMethod === 'delivery' && formData.shippingAddress?.neighborhood && allNeighborhoods) {
+    if (formData.deliveryMethod === 'delivery' && formData?.neighborhood && allNeighborhoods) {
       const selectedNeighborhood = allNeighborhoods.find(
-        (n) => n.id === formData.shippingAddress.neighborhood
+        (n) => n.id === formData.neighborhood
       );
 
       if (selectedNeighborhood) {
-        // Verifica se o pedido atinge o valor para frete grátis
+        const freeShippingThreshold = selectedNeighborhood.minOrderValueForFreeShipping;
+
+        // CORREÇÃO 2: A nova lógica de verificação
+        // 1. Verifica se o 'freeShippingThreshold' existe e é um número positivo.
+        // 2. E então, verifica se o subtotal atinge esse valor.
         if (
-          selectedNeighborhood.minOrderValueForFreeShipping &&
-          subtotal >= selectedNeighborhood.minOrderValueForFreeShipping
+          typeof freeShippingThreshold === 'number' &&
+          freeShippingThreshold > 0 &&
+          subtotal >= freeShippingThreshold
         ) {
           shippingCost = 0;
           isFreeShipping = true;
         } else {
+          // Se não houver regra de frete grátis, ou se o valor for 0, ou se o subtotal não for atingido,
+          // cobra a taxa de entrega padrão do bairro.
           shippingCost = selectedNeighborhood.deliveryFee;
         }
       }
@@ -65,12 +75,12 @@ export function ConfirmationStep({ user }: ConfirmationStepProps) {
     
     const total = subtotal + shippingCost;
     return { subtotal, shippingCost, total, isFreeShipping };
-  }, [cart, formData, allNeighborhoods]);
+}, [cart, formData, allNeighborhoods])
 
 
    const selectedNeighborhoodName = useMemo(() => {
-    if (formData.deliveryMethod === 'delivery' && formData.shippingAddress?.neighborhood && allNeighborhoods) {
-      return allNeighborhoods.find(n => n.id === formData.shippingAddress.neighborhood)?.name;
+    if (formData.deliveryMethod === 'delivery' && formData?.neighborhood && allNeighborhoods) {
+      return allNeighborhoods.find(n => n.id === formData.neighborhood)?.name;
     }
     return "";
   }, [formData, allNeighborhoods]);
@@ -136,24 +146,24 @@ export function ConfirmationStep({ user }: ConfirmationStepProps) {
             formData.deliveryMethod === "delivery" ? (
               <div className="text-muted-foreground">
                 <p className="font-medium text-primary">
-                  {formData.shippingAddress && formData.shippingAddress.customerName}
+                  {formData && formData.customerName}
                 </p>
                 <p>
-                   {formData.shippingAddress?.street},{formData.shippingAddress?.number}
+                   {formData?.street},{formData?.number}
                 </p>
                 <p>
-                  {selectedNeighborhoodName} - {formData.shippingAddress?.city},{" "}
-                  {formData.shippingAddress?.state.toUpperCase()}
+                  {selectedNeighborhoodName} - {formData?.city},{" "}
+                  {formData?.state.toUpperCase()}
                 </p>
-                <p>CEP: {formData.shippingAddress?.zipCode}</p>
+                <p>CEP: {formData?.zipCode}</p>
               </div>
             ) : (
               <div className="flex flex-col gap-1">
                 <span className="text-muted-foreground">
-                  {formData.shippingAddress.customerName}   
+                  {formData.customerName}   
                 </span>
                 <span>
-                 {applyMask(formData.shippingAddress.customerPhone,mask.phoneMobile)}
+                 {applyMask(formData.customerPhone,mask.phoneMobile)}
                 </span>
                 <p className="text-muted-foreground">Retirar na loja física.</p>
               </div>

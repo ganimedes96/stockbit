@@ -10,7 +10,6 @@ import { getOrders, getRealtimeOrders } from "./clients";
 import { useState, useEffect, useMemo } from "react";
 import { Order } from "./types";
 
-
 export const useCreateOrder = (companyId: string) => {
   const queryClient = useQueryClient();
 
@@ -95,12 +94,11 @@ export const useGetOrders = (
   return useQuery({
     // A queryKey agora inclui os filtros para criar um cache único para esta busca
     queryKey: [QueryKeys.orders, companyId, filters],
-    
+
     // A queryFn agora passa os filtros para a função de busca
     queryFn: () => getOrders(companyId, filters),
   });
 };
-
 
 export const useRealtimeOrders = (
   companyId: string,
@@ -110,18 +108,18 @@ export const useRealtimeOrders = (
   const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-
+  const { status, search } = filters;
   // 2. useEffect para iniciar e parar o listener.
   // Ele roda sempre que o companyId ou os filtros mudarem.
   useEffect(() => {
-    setIsLoading(true); // Inicia o loading sempre que os filtros mudam
+    setIsLoading(true);
 
-    // 3. Chama nossa função que usa onSnapshot.
+    // 3. Passamos um objeto de filtro para a função que contém APENAS o 'status',
+    // pois a busca por texto é feita no cliente.
     const unsubscribe = getRealtimeOrders(
       companyId,
-      filters,
+      { status }, // Passa apenas o filtro necessário para a query do Firestore
       (newOrders) => {
-        // 4. O callback atualiza o estado do nosso hook com os dados novos.
         setOrders(newOrders);
         setIsLoading(false);
       },
@@ -131,22 +129,20 @@ export const useRealtimeOrders = (
       }
     );
 
-    // 5. A função de limpeza é CRUCIAL. Ela é chamada quando o componente
-    // é desmontado ou quando as dependências do useEffect mudam.
-    // Ela executa o 'unsubscribe' para fechar a conexão com o Firestore.
     return () => unsubscribe();
-  }, [companyId, filters.status, filters]); // Depende apenas do status para a query principal
+  }, [companyId, status]);
 
   // Filtro de busca por texto é aplicado no cliente, sobre os dados recebidos em tempo real
   const filteredOrders = useMemo(() => {
-    if (!filters.search) return orders;
-    const search = filters.search.toLowerCase();
-    return orders.filter(order =>
-        order.orderNumber?.toLowerCase().includes(search) ||
-        order.customerName?.toLowerCase().includes(search) ||
-        order.customerEmail?.toLowerCase().includes(search)
+    if (!search) return orders;
+    const lowercasedSearch = search.toLowerCase();
+    return orders.filter(
+      (order) =>
+        order.orderNumber?.toLowerCase().includes(lowercasedSearch) ||
+        order.customerName?.toLowerCase().includes(lowercasedSearch) ||
+        order.customerEmail?.toLowerCase().includes(lowercasedSearch)
     );
-  }, [orders, filters.search]);
+  }, [orders, search]);
 
   // 6. O hook retorna os dados de forma parecida com o useQuery.
   return { data: filteredOrders, isLoading, error };

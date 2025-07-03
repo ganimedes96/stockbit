@@ -17,14 +17,14 @@ export type AddressFormValues = z.infer<typeof finalCheckoutSchema>;
 
 const CUSTOMER_DATA_KEY = "checkoutCustomerData";
 interface NeighborhoodProps {
-  user: User
+  user: User;
 }
 
 export function AddressStep({ user }: NeighborhoodProps) {
   // PASSO 2: Pegamos tudo o que precisamos do contexto do formulário pai.
   // O <FormProvider> no GlobalFormSheet garante que isso funcione.
   const { control, watch, setValue } = useFormContext<AddressFormValues>();
-  const  {data:neighborhoodOptions} = useGetNeighborhoods(user.company.id);
+  const { data: neighborhoodOptions } = useGetNeighborhoods(user.company.id);
   const [isFetchingAddress, setIsFetchingAddress] = useState(false);
 
   useEffect(() => {
@@ -35,24 +35,21 @@ export function AddressStep({ user }: NeighborhoodProps) {
         const savedData = JSON.parse(savedDataString);
         // Usamos 'setValue' para pré-preencher o formulário com os dados salvos
         if (savedData.customerName)
-          setValue("shippingAddress.customerName", savedData.customerName);
+          setValue("customerName", savedData.customerName);
         if (savedData.customerEmail)
-          setValue("shippingAddress.customerEmail", savedData.customerEmail);
+          setValue("customerEmail", savedData.customerEmail);
         if (savedData.customerPhone)
-          setValue("shippingAddress.customerPhone", savedData.customerPhone);
+          setValue("customerPhone", savedData.customerPhone);
         if (savedData.zipCode)
-          setValue("shippingAddress.zipCode", savedData.zipCode);
-        // ... e assim por diante para todos os outros campos de endereço ...
+          setValue("zipCode", savedData.zipCode);
         if (savedData.street)
-          setValue("shippingAddress.street", savedData.street);
+          setValue("street", savedData.street);
         if (savedData.number)
-          setValue("shippingAddress.number", savedData.number);
+          setValue("number", savedData.number);
         if (savedData.complement)
-          setValue("shippingAddress.complement", savedData.complement);
-        if (savedData.neighborhood)
-          setValue("shippingAddress.neighborhood", savedData.neighborhood);
-        if (savedData.city) setValue("shippingAddress.city", savedData.city);
-        if (savedData.state) setValue("shippingAddress.state", savedData.state);
+          setValue("complement", savedData.complement);
+        if (savedData.city) setValue("city", savedData.city);
+        if (savedData.state) setValue("state", savedData.state);
       }
     } catch (error) {
       console.error(
@@ -69,7 +66,7 @@ export function AddressStep({ user }: NeighborhoodProps) {
       if (name?.startsWith("shippingAddress")) {
         localStorage.setItem(
           CUSTOMER_DATA_KEY,
-          JSON.stringify(value.shippingAddress)
+          JSON.stringify(value)
         );
       }
     });
@@ -78,7 +75,7 @@ export function AddressStep({ user }: NeighborhoodProps) {
   }, [watch]);
 
   const deliveryMethod = watch("deliveryMethod");
-  const zipCode = watch("shippingAddress.zipCode");
+  const zipCode = watch("zipCode");
 
   // A lógica do ViaCEP permanece a mesma, pois ela usa 'watch' e 'setValue' do contexto.
   useEffect(() => {
@@ -93,16 +90,14 @@ export function AddressStep({ user }: NeighborhoodProps) {
         );
         const data = await response.json();
         if (!data.erro) {
-          setValue("shippingAddress.street", data.logradouro, {
+          setValue("street", data.logradouro, {
             shouldValidate: true,
           });
-          setValue("shippingAddress.neighborhood", data.bairro, {
+          
+          setValue("city", data.localidade, {
             shouldValidate: true,
           });
-          setValue("shippingAddress.city", data.localidade, {
-            shouldValidate: true,
-          });
-          setValue("shippingAddress.state", data.uf, { shouldValidate: true });
+          setValue("state", data.uf, { shouldValidate: true });
         }
       } catch (error) {
         console.error("Erro ao buscar CEP:", error);
@@ -135,7 +130,7 @@ export function AddressStep({ user }: NeighborhoodProps) {
                 control={control}
                 required
                 rules={{ required: "O nome do cliente é obrigatório" }}
-                name="shippingAddress.customerName"
+                name="customerName"
                 label="Nome do Cliente *"
                 placeholder="Ex: João da Silva"
               />
@@ -143,13 +138,13 @@ export function AddressStep({ user }: NeighborhoodProps) {
             <div className="w-full md:grid md:grid-cols-2 md:gap-4 mt-4">
               <ControlledInput
                 control={control}
-                name="shippingAddress.customerEmail"
+                name="customerEmail"
                 label="E-mail do Cliente"
                 placeholder="Ex: seu@example.com"
               />
               <ControlledInput
                 control={control}
-                name="shippingAddress.customerPhone"
+                name="customerPhone"
                 label="Telefone (Whatsapp) *"
                 maskType="phoneMobile"
                 placeholder="(00) 00000-0000"
@@ -160,7 +155,7 @@ export function AddressStep({ user }: NeighborhoodProps) {
           <div className="md:col-span-2">
             <ControlledInput
               control={control}
-              name="shippingAddress.zipCode"
+              name="zipCode"
               label="CEP *"
               maskType="cep"
               placeholder="00000-000"
@@ -169,7 +164,7 @@ export function AddressStep({ user }: NeighborhoodProps) {
           <div className="md:col-span-4">
             <ControlledInput
               control={control}
-              name="shippingAddress.street"
+              name="street"
               label="Rua / Avenida *"
               placeholder="Ex: Av. Paulista"
               disabled={isFetchingAddress}
@@ -178,7 +173,7 @@ export function AddressStep({ user }: NeighborhoodProps) {
           <div className="md:col-span-2">
             <ControlledInput
               control={control}
-              name="shippingAddress.number"
+              name="number"
               label="Número *"
               placeholder="Ex: 123"
             />
@@ -186,7 +181,7 @@ export function AddressStep({ user }: NeighborhoodProps) {
           <div className="md:col-span-4">
             <ControlledInput
               control={control}
-              name="shippingAddress.complement"
+              name="complement"
               label="Complemento"
               placeholder="Apto, Bloco, etc."
             />
@@ -194,15 +189,19 @@ export function AddressStep({ user }: NeighborhoodProps) {
           <div className="md:col-span-2">
             <ControlledSelect
               control={control}
-              name="shippingAddress.neighborhood"
+              name="neighborhood"
               label="Bairro *"
               placeholder="Selecione um bairro"
-              options={neighborhoodOptions?.filter((option) => option.isActive === true ).map((option) => {
-                return {
-                  id: option.id,
-                  name: option.name
-                }
-              }) || []}
+              options={
+                neighborhoodOptions
+                  ?.filter((option) => option.isActive === true)
+                  .map((option) => {
+                    return {
+                      id: option.id,
+                      name: option.name,
+                    };
+                  }) || []
+              }
               disabled={isFetchingAddress}
             />
           </div>
@@ -210,7 +209,7 @@ export function AddressStep({ user }: NeighborhoodProps) {
             <ControlledInput
               placeholder="Ex: São Paulo"
               control={control}
-              name="shippingAddress.city"
+              name="city"
               label="Cidade *"
               disabled={isFetchingAddress}
             />
@@ -219,7 +218,7 @@ export function AddressStep({ user }: NeighborhoodProps) {
             <ControlledInput
               placeholder="Ex: SP"
               control={control}
-              name="shippingAddress.state"
+              name="state"
               label="Estado (UF) *"
               disabled={isFetchingAddress}
               maxLength={2}
@@ -248,7 +247,7 @@ export function AddressStep({ user }: NeighborhoodProps) {
             <div className="md:col-span-2">
               <ControlledInput
                 control={control}
-                name="shippingAddress.customerName"
+                name="customerName"
                 label="Nome de quem irá retirar *"
                 placeholder="Ex: João da Silva"
               />
@@ -256,14 +255,14 @@ export function AddressStep({ user }: NeighborhoodProps) {
 
             <ControlledInput
               control={control}
-              name="shippingAddress.customerPhone"
+              name="customerPhone"
               label="Telefone (Whatsapp) *"
               maskType="phoneMobile"
               placeholder="(00) 00000-0000"
             />
             <ControlledInput
               control={control}
-              name="shippingAddress.customerEmail"
+              name="customerEmail"
               label="E-mail (Opcional)"
               placeholder="Ex: seu@example.com"
             />

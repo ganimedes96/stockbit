@@ -59,7 +59,7 @@ export function RegisterOrder({ user }: RegisterOrderProps) {
   const { cart, clearCart } = useCart();
   const { mutate } = useCreateOrder(user.company.id);
 
-  const steps: Step<CheckoutFormValues>[] = [
+  const steps: Step[] = [
     {
       id: 0,
       name: "Carrinho",
@@ -70,7 +70,20 @@ export function RegisterOrder({ user }: RegisterOrderProps) {
       id: 1,
       name: "Endereço",
       icon: MapIcon,
-      fields: ["shippingAddress", "deliveryMethod"],
+      fields: [
+        "paymentMethod",
+        "deliveryMethod",
+        "customerEmail",
+        "customerName",
+        "customerPhone",
+        "zipCode",
+        "street",
+        "number",
+        "complement",
+        "neighborhood",
+        "city",
+        "state",
+      ],
     },
     { id: 2, name: "Pagamento", icon: CreditCard, fields: ["paymentMethod"] },
     { id: 3, name: "Finalizar", icon: CheckCircle },
@@ -101,16 +114,16 @@ export function RegisterOrder({ user }: RegisterOrderProps) {
 
     if (data.deliveryMethod === "delivery") {
       shippingAddressForOrder = {
-        customerName: data.shippingAddress.customerName,
-        customerEmail: data.shippingAddress.customerEmail,
-        customerPhone: data.shippingAddress.customerPhone,
-        zipCode: data.shippingAddress.zipCode,
-        street: data.shippingAddress.street,
-        number: data.shippingAddress.number,
-        complement: data.shippingAddress.complement,
-        neighborhood: data.shippingAddress.neighborhood,
-        city: data.shippingAddress.city,
-        state: data.shippingAddress.state,
+        customerName: data.customerName,
+        customerEmail: data.customerEmail,
+        customerPhone: data.customerPhone,
+        zipCode: data.zipCode,
+        street: data.street,
+        number: data.number,
+        complement: data.complement,
+        neighborhood: data.neighborhood,
+        city: data.city,
+        state: data.state,
       };
     }
 
@@ -118,15 +131,15 @@ export function RegisterOrder({ user }: RegisterOrderProps) {
       orderNumber: `#${Date.now().toString().slice(-6)}`,
       status: OrderStatus.Pending,
       lineItems,
-      customerName: data.shippingAddress.customerName,
-      customerEmail: data.shippingAddress.customerEmail,
-      customerPhone: data.shippingAddress.customerPhone,
+      customerName: data.customerName,
+      customerEmail: data.customerEmail,
+      customerPhone: data.customerPhone,
       subtotal,
       shippingCost: 0,
       discounts: 0,
       total: grandTotal,
       paymentMethod: data.paymentMethod,
-      description: `Pedido realizado por ${data.shippingAddress.customerName}`,
+      description: `Pedido realizado por ${data.customerName}`,
       shippingAddress: shippingAddressForOrder,
       notes: "",
     };
