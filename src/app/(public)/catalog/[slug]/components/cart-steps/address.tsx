@@ -10,8 +10,7 @@ import { House, MapPin } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useGetNeighborhoods } from "@/domain/neighborhoods/queries";
 import { User } from "@/domain/user/types";
-
-
+import { ControlledTextarea } from "@/components/form/controllers/controlled-text-area";
 
 const CUSTOMER_DATA_KEY = "checkoutCustomerData";
 interface NeighborhoodProps {
@@ -38,14 +37,10 @@ export function AddressStep({ user }: NeighborhoodProps) {
           setValue("customerEmail", savedData.customerEmail);
         if (savedData.customerPhone)
           setValue("customerPhone", savedData.customerPhone);
-        if (savedData.zipCode)
-          setValue("zipCode", savedData.zipCode);
-        if (savedData.street)
-          setValue("street", savedData.street);
-        if (savedData.number)
-          setValue("number", savedData.number);
-        if (savedData.complement)
-          setValue("complement", savedData.complement);
+        if (savedData.zipCode) setValue("zipCode", savedData.zipCode);
+        if (savedData.street) setValue("street", savedData.street);
+        if (savedData.number) setValue("number", savedData.number);
+        if (savedData.complement) setValue("complement", savedData.complement);
         if (savedData.city) setValue("city", savedData.city);
         if (savedData.state) setValue("state", savedData.state);
       }
@@ -58,24 +53,24 @@ export function AddressStep({ user }: NeighborhoodProps) {
   }, [setValue]);
 
   useEffect(() => {
-  const subscription = watch((value) => {
-    const toSave = {
-      customerName: value.customerName,
-      customerEmail: value.customerEmail,
-      customerPhone: value.customerPhone,
-      zipCode: value.zipCode,
-      street: value.street,
-      number: value.number,
-      complement: value.complement,
-      neighborhood: value.neighborhood,
-      city: value.city,
-      state: value.state,
-    };
-    localStorage.setItem(CUSTOMER_DATA_KEY, JSON.stringify(toSave));
-  });
+    const subscription = watch((value) => {
+      const toSave = {
+        customerName: value.customerName,
+        customerEmail: value.customerEmail,
+        customerPhone: value.customerPhone,
+        zipCode: value.zipCode,
+        street: value.street,
+        number: value.number,
+        complement: value.complement,
+        neighborhood: value.neighborhood,
+        city: value.city,
+        state: value.state,
+      };
+      localStorage.setItem(CUSTOMER_DATA_KEY, JSON.stringify(toSave));
+    });
 
-  return () => subscription.unsubscribe();
-}, [watch]);
+    return () => subscription.unsubscribe();
+  }, [watch]);
 
   const deliveryMethod = watch("deliveryMethod");
   const zipCode = watch("zipCode");
@@ -96,7 +91,7 @@ export function AddressStep({ user }: NeighborhoodProps) {
           setValue("street", data.logradouro, {
             shouldValidate: true,
           });
-          
+
           setValue("city", data.localidade, {
             shouldValidate: true,
           });
@@ -126,81 +121,58 @@ export function AddressStep({ user }: NeighborhoodProps) {
         ]}
       />
       {deliveryMethod === "delivery" && (
-        <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-          <div className=" flex flex-col md:col-span-6">
-            <div className="w-full ">
-              <ControlledInput
-                control={control}
-                required
-                rules={{ required: "O nome do cliente é obrigatório" }}
-                name="customerName"
-                label="Nome do Cliente *"
-                placeholder="Ex: João da Silva"
-              />
-            </div>
-            <div className="w-full md:grid md:grid-cols-2 md:gap-4 mt-4">
-              <ControlledInput
-                control={control}
-                name="customerEmail"
-                label="E-mail do Cliente"
-                placeholder="Ex: seu@example.com"
-              />
-              <ControlledInput
-                control={control}
-                required
-                rules={{ required: "O telefone do cliente é obrigatório" }}
-                name="customerPhone"
-                label="Telefone (Whatsapp) *"
-                maskType="phoneMobile"
-                placeholder="(00) 00000-0000"
-              />
-            </div>
+        <div className="space-y-4">
+          <ControlledInput
+            control={control}
+            required
+            rules={{ required: "O nome do cliente é obrigatório" }}
+            name="customerName"
+            label="Nome do Cliente *"
+            placeholder="Ex: João da Silva"
+          />
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <ControlledInput
+              control={control}
+              name="customerEmail"
+              label="E-mail do Cliente"
+              placeholder="Ex: seu@example.com"
+            />
+            <ControlledInput
+              control={control}
+              required
+              type="tel"
+              rules={{ required: "O telefone do cliente é obrigatório" }}
+              name="customerPhone"
+              label="Telefone (Whatsapp) *"
+              maskType="phoneMobile"
+              placeholder="(00) 00000-0000"
+            />
           </div>
 
-          <div className="md:col-span-2">
-            <ControlledInput
-              control={control}
-              required
-              rules={{ required: "O CEP é obrigatório" }}
-              name="zipCode"
-              label="CEP *"
-              maskType="cep"
-              placeholder="00000-000"
-            />
-          </div>
-          <div className="md:col-span-4">
-            <ControlledInput
-              control={control}
-              required
-              rules={{ required: "A rua ou avenida é obrigatória" }}
-              name="street"
-              label="Rua / Avenida *"
-              placeholder="Ex: Av. Paulista"
-              disabled={isFetchingAddress}
-            />
-          </div>
-          <div className="md:col-span-2">
-            <ControlledInput
-              control={control}
-              required
-              rules={{ required: "O número é obrigatório" }}
-              name="number"
-              label="Número *"
-              placeholder="Ex: 123"
-            />
-          </div>
-          <div className="md:col-span-4">
-            <ControlledInput
-              control={control}
-              name="complement"
-              label="Complemento"
-              placeholder="Apto, Bloco, etc."
-            />
-          </div>
-          <div className="md:col-span-2">
+          <ControlledInput
+            control={control}
+            required
+            rules={{ required: "O CEP é obrigatório" }}
+            name="zipCode"
+            label="CEP *"
+            maskType="cep"
+            placeholder="00000-000"
+          />
+
+          <ControlledInput
+            control={control}
+            required
+            rules={{ required: "A rua ou avenida é obrigatória" }}
+            name="street"
+            label="Rua / Avenida *"
+            placeholder="Ex: Av. Paulista"
+            disabled={isFetchingAddress}
+          />
+
+          <div className="grid grid-cols-[1fr_0.6fr] gap-4">
             <ControlledSelect
               control={control}
-              
               rules={{ required: "O bairro é obrigatório" }}
               name="neighborhood"
               label="Bairro *"
@@ -217,8 +189,17 @@ export function AddressStep({ user }: NeighborhoodProps) {
               }
               disabled={isFetchingAddress}
             />
+            <ControlledInput
+              control={control}
+              required
+              rules={{ required: "O número é obrigatório" }}
+              name="number"
+              label="Número *"
+              placeholder="Ex: 123"
+            />
           </div>
-          <div className="md:col-span-2">
+         <div className="grid grid-cols-[1fr_0.4fr] gap-4">
+
             <ControlledInput
               placeholder="Ex: São Paulo"
               control={control}
@@ -228,8 +209,8 @@ export function AddressStep({ user }: NeighborhoodProps) {
               label="Cidade *"
               disabled={isFetchingAddress}
             />
-          </div>
-          <div className="md:col-span-2">
+         
+          
             <ControlledInput
               placeholder="Ex: SP"
               control={control}
@@ -240,7 +221,15 @@ export function AddressStep({ user }: NeighborhoodProps) {
               disabled={isFetchingAddress}
               maxLength={2}
             />
-          </div>
+          
+         </div>
+          <ControlledTextarea
+            control={control}
+            name="complement"
+            label="Complemento"
+            placeholder="Apto, Bloco, etc."
+            limit={100}
+          />
         </div>
       )}
       {deliveryMethod === "pickup" && (

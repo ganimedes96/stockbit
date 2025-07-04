@@ -36,14 +36,14 @@ export async function Header({ children, user }: HeaderProps) {
 
         <div className="flex items-center gap-4">
           {children}
-          {user.isTrial && user.role === "admin" && (
+          {/* {user.isTrial && user.role === "admin" && (
             <Link
               href={"/upgrade"}
               className="w-52 bg-input rounded-md p-2 text-center"
             >
               Faça upgrade agora!
             </Link>
-          )}
+          )} */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="icon" className="rounded-full text-primary">

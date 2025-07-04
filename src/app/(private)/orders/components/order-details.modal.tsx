@@ -231,44 +231,74 @@ export function OrderDetailsModal({
             {/* --- Seção de Itens do Pedido --- */}
             <div>
               <h4 className="font-semibold mb-4">Itens do Pedido</h4>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-16"></TableHead>
-                    <TableHead>Produto</TableHead>
-                    <TableHead className="text-center">Qtd.</TableHead>
-                    <TableHead className="text-right">Preço Unit.</TableHead>
-                    <TableHead className="text-right">Subtotal</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {order.lineItems.map((item) => (
-                    <TableRow key={item.productId}>
-                      <TableCell>
-                        <Image
-                          src={item.photo || ImageDefault}
-                          alt={item.productName}
-                          width={40}
-                          height={40}
-                          className="rounded-md object-cover aspect-square"
-                        />
-                      </TableCell>
-                      <TableCell className="font-medium">
-                        {item.productName}
-                      </TableCell>
-                      <TableCell className="text-center">
-                        {item.quantity}
-                      </TableCell>
-                      <TableCell className="text-right font-mono">
-                        {formatCurrency(item.unitPrice)}
-                      </TableCell>
-                      <TableCell className="text-right font-mono font-semibold">
-                        {formatCurrency(item.totalPrice)}
-                      </TableCell>
+
+              {/* Desktop - Tabela */}
+              <div className="hidden sm:block">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-16"></TableHead>
+                      <TableHead>Produto</TableHead>
+                      <TableHead className="text-center">Qtd.</TableHead>
+                      <TableHead className="text-right">Preço Unit.</TableHead>
+                      <TableHead className="text-right">Subtotal</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {order.lineItems.map((item) => (
+                      <TableRow key={item.productId}>
+                        <TableCell>
+                          <Image
+                            src={item.photo || ImageDefault}
+                            alt={item.productName}
+                            width={40}
+                            height={40}
+                            className="rounded-md object-cover aspect-square"
+                          />
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {item.productName}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {item.quantity}
+                        </TableCell>
+                        <TableCell className="text-right font-mono">
+                          {formatCurrency(item.unitPrice)}
+                        </TableCell>
+                        <TableCell className="text-right font-mono font-semibold">
+                          {formatCurrency(item.totalPrice)}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile - Cards */}
+              <div className="block sm:hidden space-y-4">
+                {order.lineItems.map((item) => (
+                  <div
+                    key={item.productId}
+                    className="flex gap-4 p-3 border rounded-lg shadow-sm"
+                  >
+                    <Image
+                      src={item.photo || ImageDefault}
+                      alt={item.productName}
+                      width={100}
+                      height={60}
+                      className="rounded-md object-cover aspect-square"
+                    />
+                    <div className="flex-1 text-sm">
+                      <p className="font-medium">{item.productName}</p>
+                      <p>Qtd: {item.quantity}</p>
+                      <p>Unitário: {formatCurrency(item.unitPrice)}</p>
+                      <p className="font-semibold">
+                        Subtotal: {formatCurrency(item.totalPrice)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
             {/* <div>
               <h4 className="font-semibold mb-4">Resumo Financeiro</h4>

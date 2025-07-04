@@ -122,7 +122,7 @@ export function CatalogList({ user }: CatalogListProps) {
   return (
     <div className="flex flex-col gap-6 items-center w-screen max-w-[1200px] mx-auto">
       <Card className="w-full flex flex-col sm:flex-row items-center justify-between md:p-4 p-2 gap-6">
-        <div className="w-full sm:flex-1">
+        <div className="w-full sm:flex-1 flex items-center gap-4">
           <Input
             icon={<Search className="h-4 w-4 text-muted-foreground" />}
             iconPosition="left"
@@ -131,6 +131,26 @@ export function CatalogList({ user }: CatalogListProps) {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+          <div className="sm:hidden">
+            <div className="flex border rounded-lg">
+              <Button
+                variant={viewMode === "grid" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("grid")}
+                className="rounded-r-none"
+              >
+                <Grid3X3 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === "list" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("list")}
+                className="rounded-l-none"
+              >
+                <ListIcon className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
         </div>
         <div className="flex items-center space-x-4 justify-between w-full sm:w-auto">
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
@@ -138,10 +158,12 @@ export function CatalogList({ user }: CatalogListProps) {
               <SelectValue placeholder="Categorias" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todas</SelectItem>
+              <SelectItem value="all">Todas as categorias </SelectItem>
               {categories?.map((category) => (
                 <SelectItem key={category.id} value={category.id}>
-                  {category.name}
+                  <span className="truncate block max-w-[100px]">
+                    {category.name}
+                  </span>
                 </SelectItem>
               ))}
             </SelectContent>
@@ -158,23 +180,25 @@ export function CatalogList({ user }: CatalogListProps) {
               <SelectItem value="price-high">Maior preço</SelectItem>
             </SelectContent>
           </Select>
-          <div className="flex border rounded-lg">
-            <Button
-              variant={viewMode === "grid" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("grid")}
-              className="rounded-r-none"
-            >
-              <Grid3X3 className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={viewMode === "list" ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setViewMode("list")}
-              className="rounded-l-none"
-            >
-              <ListIcon className="h-4 w-4" />
-            </Button>
+          <div className="hidden sm:block">
+            <div className="flex border rounded-lg">
+              <Button
+                variant={viewMode === "grid" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("grid")}
+                className="rounded-r-none"
+              >
+                <Grid3X3 className="h-4 w-4" />
+              </Button>
+              <Button
+                variant={viewMode === "list" ? "default" : "ghost"}
+                size="sm"
+                onClick={() => setViewMode("list")}
+                className="rounded-l-none"
+              >
+                <ListIcon className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
         {/* View Mode */}

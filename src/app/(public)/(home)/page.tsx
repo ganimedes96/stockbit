@@ -141,11 +141,15 @@ function HeroSection() {
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Button size="lg" className="text-lg px-8">
-              Começar Grátis por 14 dias
-              <ArrowRight className="ml-2 h-5 w-5" />
+              <Link className="flex items-center justify-center" href="/login">
+                Começar Grátis por 14 dias
+                <ArrowRight className="ml-2 h-5 w-5" />
+              </Link>
             </Button>
             <Button size="lg" variant="outline" className="text-lg px-8">
-              Ver Demonstração
+              <Link href="/register">
+                Ver Demonstração
+              </Link>
             </Button>
           </div>
           <div className="flex items-center justify-center space-x-8 text-sm text-muted-foreground">

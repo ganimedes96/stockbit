@@ -63,7 +63,7 @@ export function NeighborhoodsList({ user }: NeighborhoodsListProps) {
 
   return (
     <div className="p-6">
-      <Card>
+      <Card className="hidden sm:block">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
           <div>
             <CardTitle>Bairros de Entrega</CardTitle>
@@ -124,54 +124,56 @@ export function NeighborhoodsList({ user }: NeighborhoodsListProps) {
                     <TableSkeleton columns={5} rows={5} />
                   ) : filteredNeighborhoods.length > 0 ? (
                     // 4. Renderiza a lista de bairros filtrada
-                    (filteredNeighborhoods ?? [] )?.map((neighborhood: Neighborhood) => (
-                      <TableRow key={neighborhood.id}>
-                        <TableCell className="font-medium text-center">
-                          {neighborhood.name}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          {formatCurrency(neighborhood.deliveryFee)}
-                        </TableCell>
-                        <TableCell className="text-center ">
-                          {neighborhood.minOrderValueForFreeShipping
-                            ? formatCurrency(
-                                neighborhood.minOrderValueForFreeShipping
-                              )
-                            : "N/A"}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <Badge
-                            variant={
-                              neighborhood.isActive ? "success" : "secondary"
-                            }
-                          >
-                            {neighborhood.isActive ? "Ativo" : "Inativo"}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex items-center justify-center gap-2">
-                            <NeighborhoodActiveSwitch
-                              companyId={user.company.id}
-                              neighborhood={neighborhood}
-                            />
-                            <FormSheet
-                              title=" Editar Bairro"
-                              description="Edite o bairro"
-                              formComponent={UpdateNeighborhood}
-                              formProps={{
-                                user,
-                                neighborhood
-                              }}
-                              customButton={
-                                <Button size={"icon"} variant="outline">
-                                  <SquarePen />
-                                </Button>
+                    (filteredNeighborhoods ?? [])?.map(
+                      (neighborhood: Neighborhood) => (
+                        <TableRow key={neighborhood.id}>
+                          <TableCell className="font-medium text-center">
+                            {neighborhood.name}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            {formatCurrency(neighborhood.deliveryFee)}
+                          </TableCell>
+                          <TableCell className="text-center ">
+                            {neighborhood.minOrderValueForFreeShipping
+                              ? formatCurrency(
+                                  neighborhood.minOrderValueForFreeShipping
+                                )
+                              : "N/A"}
+                          </TableCell>
+                          <TableCell className="text-center">
+                            <Badge
+                              variant={
+                                neighborhood.isActive ? "success" : "secondary"
                               }
-                            />
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))
+                            >
+                              {neighborhood.isActive ? "Ativo" : "Inativo"}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center justify-center gap-2">
+                              <NeighborhoodActiveSwitch
+                                companyId={user.company.id}
+                                neighborhood={neighborhood}
+                              />
+                              <FormSheet
+                                title=" Editar Bairro"
+                                description="Edite o bairro"
+                                formComponent={UpdateNeighborhood}
+                                formProps={{
+                                  user,
+                                  neighborhood,
+                                }}
+                                customButton={
+                                  <Button size={"icon"} variant="outline">
+                                    <SquarePen />
+                                  </Button>
+                                }
+                              />
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    )
                   ) : (
                     // Renderiza a mensagem de "nenhum item"
                     <TableRow>
@@ -190,6 +192,91 @@ export function NeighborhoodsList({ user }: NeighborhoodsListProps) {
           </Card>
         </CardContent>
       </Card>
+
+      <div className="sm:hidden space-y-4 ">
+        
+            <h2 className="text-xl sm:text-4xl font-semibold mb-4">Bairros de Entrega</h2>
+           
+          
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
+          <Input
+            icon={<Search className="h-4 w-4 text-muted-foreground" />}
+            iconPosition="left"
+            placeholder="Buscar por nome do bairro..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <FormSheet
+          title=" Adicionar Bairro"
+          description="Adicione um novo bairro"
+          formProps={{ companyId: user.company.id }}
+          formComponent={RegisterNeighborhood}
+          customButton={
+            <Plus
+              size={20}
+              className="z-50 fixed text-muted bottom-10 right-10 bg-primary rounded-full  w-14 h-14 p-3 "
+            />
+          }
+        />
+
+        {isLoading ? (
+          <TableSkeleton columns={1} rows={5} />
+        ) : filteredNeighborhoods.length > 0 ? (
+          filteredNeighborhoods.map((neighborhood) => (
+            <div
+              key={neighborhood.id}
+              className="border rounded-lg p-4 shadow-sm flex flex-col gap-2 text-sm"
+            >
+              <div className="flex justify-between">
+                <span className="font-semibold">{neighborhood.name}</span>
+                <Badge
+                  variant={neighborhood.isActive ? "success" : "secondary"}
+                >
+                  {neighborhood.isActive ? "Ativo" : "Inativo"}
+                </Badge>
+              </div>
+
+              <div className="flex justify-between">
+                <span>Taxa de Entrega:</span>
+                <span>{formatCurrency(neighborhood.deliveryFee)}</span>
+              </div>
+
+              <div className="flex justify-between">
+                <span>Frete Grátis Acima de:</span>
+                <span>
+                  {neighborhood.minOrderValueForFreeShipping
+                    ? formatCurrency(neighborhood.minOrderValueForFreeShipping)
+                    : "N/A"}
+                </span>
+              </div>
+
+              <div className="flex justify-between items-center gap-2 mt-2">
+                <NeighborhoodActiveSwitch
+                  companyId={user.company.id}
+                  neighborhood={neighborhood}
+                />
+                <FormSheet
+                  title="Editar Bairro"
+                  description="Edite o bairro"
+                  formComponent={UpdateNeighborhood}
+                  formProps={{ user, neighborhood }}
+                  customButton={
+                    <Button size={"icon"} variant="outline">
+                      <SquarePen />
+                    </Button>
+                  }
+                />
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-center text-muted-foreground py-12">
+            <MapPin className="mx-auto mb-2 h-8 w-8" />
+            Nenhum bairro cadastrado.
+          </div>
+        )}
+      </div>
     </div>
   );
 }
