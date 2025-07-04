@@ -198,7 +198,7 @@ export function AddressStep({ user }: NeighborhoodProps) {
               placeholder="Ex: 123"
             />
           </div>
-         <div className="grid grid-cols-[1fr_0.4fr] gap-4">
+         <div className="grid grid-cols-[1fr_0.5fr] gap-4">
 
             <ControlledInput
               placeholder="Ex: São Paulo"
