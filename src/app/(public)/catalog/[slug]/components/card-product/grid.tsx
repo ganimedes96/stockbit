@@ -55,12 +55,13 @@ export function Grid({
               {categoryName || "Sem Categoria"}
             </Badge>
           </div>
-          <h3 className="font-semibold text-lg mb-1 truncate" title={name}>
+          <h3 className="font-semibold text-lg mb-1 truncate block max-w-[250px]" title={name}>
             {name}
           </h3>
+        
           {product.description && (
             <p
-              className="text-gray-600 text-sm mb-3 h-10 line-clamp-2"
+              className="truncate block max-w-300px] text-gray-400 text-sm mb-3 h-10 line-clamp-2"
               title={description}
             >
               {description}

@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
 import { formatCurrency } from "@/utils/text/format";
 import { Minus, Plus, ShoppingCart, Trash2 } from "lucide-react";
 import Image from "next/image";
@@ -39,79 +38,133 @@ export function CartProductsList() {
     <div className="flex flex-col h-full">
       <h3 className="text-lg font-semibold mb-4 px-1">Resumo do Carrinho</h3>
       <ScrollArea className="max-h-[350px] overflow-y-auto">
-        <div className="space-y-4">
-          {/* 4. Mapeamos os itens do carrinho para renderizar cada linha. */}
-          {cart.map((item) => (
-            <div key={item.id} className="flex items-center gap-4">
-              <Image
-                src={
-                  typeof item.photo === "string" ||
-                  typeof item.photo === "undefined"
-                    ? item.photo || ImageDefault
-                    : ImageDefault
-                }
-                alt={item.name}
-                width={64}
-                height={64}
-                className="h-16 w-16 rounded-md object-cover"
-              />
-              <div className="flex-1">
-                <p className="font-medium">{item.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {formatCurrency(item.salePrice)}
-                </p>
-              </div>
+       <div className="space-y-4">
+  {cart.map((item) => (
+    <div
+      key={item.id}
+      className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b pb-4"
+    >
+      {/* IMAGEM + INFO */}
+      <div className="flex gap-3 flex-1 min-w-0">
+        <Image
+          src={
+            typeof item.photo === "string" || typeof item.photo === "undefined"
+              ? item.photo || ImageDefault
+              : ImageDefault
+          }
+          alt={item.name}
+          width={64}
+          height={64}
+          className="h-16 w-16 rounded-md object-cover flex-shrink-0"
+        />
 
-              {/* 5. Controles de Quantidade */}
-              <div className="flex items-center gap-2">
-                <Button
-                  size="icon"
-                  type="button"
-                  variant="outline"
-                  className="h-8 w-8 disabled:opacity-50"
-                  onClick={() => decreaseQuantity(item.id)}
-                  disabled={item.quantity <= 1}
-                >
-                  <Minus className="h-4 w-4" />
-                </Button>
-                <span className="w-10 text-center font-bold">
-                  {item.quantity}
-                </span>
-                {/* O addToCart já tem a lógica para incrementar, então podemos reutilizá-la */}
-                <Button
-                  size="icon"
-                  variant="outline"
-                  type="button"
-                  className="h-8 w-8"
-                  onClick={() => addToCart(item, 1)}
-                   disabled={item.quantity >= item.openingStock}
-                >
-                  <Plus className="h-4 w-4" />
-                </Button>
-              </div>
+        <div className="flex flex-col justify-between flex-1 min-w-0">
+          <p className="font-medium text-base truncate">
+            {item.name}
+          </p>
+          <p className="text-sm text-muted-foreground">
+            {formatCurrency(item.salePrice)}
+          </p>
+          
+          {/* CONTROLES DE QUANTIDADE - MOBILE */}
+          <div className="flex items-center justify-between mt-2 sm:hidden">
+            <div className="flex items-center gap-2">
+              <Button
+                size="icon"
+                type="button"
+                variant="outline"
+                className="h-8 w-8 disabled:opacity-50"
+                onClick={() => decreaseQuantity(item.id)}
+                disabled={item.quantity <= 1}
+              >
+                <Minus className="h-4 w-4" />
+              </Button>
 
-              <div className="w-24 text-right font-medium">
-                {formatCurrency(item.salePrice * item.quantity)}
-              </div>
+              <span className="w-10 text-center font-bold">{item.quantity}</span>
 
               <Button
-                type="button"
                 size="icon"
+                variant="outline"
+                type="button"
+                className="h-8 w-8"
+                onClick={() => addToCart(item, 1)}
+                disabled={item.quantity >= item.openingStock}
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium">
+                {formatCurrency(item.salePrice * item.quantity)}
+              </span>
+              <Button
+                type="button"
+                size="sm"
                 variant="ghost"
-                className="text-muted-foreground hover:text-destructive"
+                className="text-muted-foreground hover:text-destructive p-2"
                 onClick={() => removeFromCart(item.id)}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>
             </div>
-          ))}
+          </div>
         </div>
+      </div>
+
+      {/* CONTROLES DE QUANTIDADE - DESKTOP */}
+      <div className="hidden sm:flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <Button
+            size="icon"
+            type="button"
+            variant="outline"
+            className="h-8 w-8 disabled:opacity-50"
+            onClick={() => decreaseQuantity(item.id)}
+            disabled={item.quantity <= 1}
+          >
+            <Minus className="h-4 w-4" />
+          </Button>
+
+          <span className="w-10 text-center font-bold">{item.quantity}</span>
+
+          <Button
+            size="icon"
+            variant="outline"
+            type="button"
+            className="h-8 w-8"
+            onClick={() => addToCart(item, 1)}
+            disabled={item.quantity >= item.openingStock}
+          >
+            <Plus className="h-4 w-4" />
+          </Button>
+        </div>
+
+        {/* TOTAL NO DESKTOP */}
+        <div className="w-24 text-right font-medium">
+          {formatCurrency(item.salePrice * item.quantity)}
+        </div>
+
+        {/* BOTÃO REMOVER - DESKTOP */}
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          className="text-muted-foreground hover:text-destructive"
+          onClick={() => removeFromCart(item.id)}
+        >
+          <Trash2 className="h-4 w-4 mr-1 text-red-500" />
+        </Button>
+      </div>
+    </div>
+  ))}
+</div>
         <Scrollbar orientation="vertical" />
       </ScrollArea>
 
       {/* 6. Rodapé com o subtotal e o botão de Limpar Carrinho */}
       <div className="mt-auto pt-4">
-        <Separator className="my-4" />
+     
         <div className="flex justify-between items-center font-semibold text-lg">
           <span>Subtotal</span>
           <span>{formatCurrency(subtotal)}</span>
