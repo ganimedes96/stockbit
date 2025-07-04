@@ -12,7 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { ControlledRadioGroup } from "@/components/form/controllers/controlled-radio-group";
 import z from "zod";
 import { ControlledSelect } from "@/components/form/controllers/controlled-select";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const onlyNumbers = (value: string) => value.replace(/\D/g, "");
 
