@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { ControlledRadioGroup } from "@/components/form/controllers/controlled-radio-group";
 import z from "zod";
 import { ControlledSelect } from "@/components/form/controllers/controlled-select";
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 
 const onlyNumbers = (value: string) => value.replace(/\D/g, "");
 
@@ -84,7 +85,7 @@ export function FormSupplier({ companyId, onSuccess }: SupplierFormProps) {
         state: "",
       },
       description: "",
-      defaultPaymentTerms: '30', // Valor padrão para condições de pagamento
+      defaultPaymentTerms: "30", // Valor padrão para condições de pagamento
       type: "PJ", // Valor padrão para tipo de pessoa
     },
   });
@@ -139,117 +140,135 @@ export function FormSupplier({ companyId, onSuccess }: SupplierFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {/* Seção de Informações Principais */}
-      <div>
-        <Separator className="my-2" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-          <ControlledInput
-            control={control}
-            name="name"
-            label="Nome do Fornecedor *"
-            placeholder="Nome Fantasia ou Completo"
-          />
-          <ControlledInput
-            control={control}
-            name="legalName"
-            label="Razão Social"
-            placeholder="Nome legal da empresa (se aplicável)"
-          />
-          <ControlledRadioGroup
-            control={control}
-            name="type"
-            label="Tipo de Pessoa"
-            options={[
-              { label: "Pessoa Jurídica", value: "PJ" },
-              { label: "Pessoa Física", value: "PF" },
-            ]}
-          />
-          <ControlledInput
-            control={control}
-            name="document"
-            label={personType === "PJ" ? "CNPJ" : "CPF"}
-            maskType={personType === "PJ" ? "cnpj" : "cpf"}
-            placeholder={personType === "PJ" ? "Digite o CNPJ" : "Digite o CPF"}
-            key={personType}
-          />
-        </div>
-      </div>
+    <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col h-full">
+      <ScrollArea className="flex-1 w-full pb-16">
+        <div className="space-y-6 p-2">
+          {/* Seção de Informações Principais */}
+          <div>
+            <h3 className="text-lg font-medium">Informações Básicas</h3>
+            <Separator className="my-2" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <ControlledInput
+                control={control}
+                name="name"
+                label="Nome do Fornecedor *"
+                placeholder="Nome Fantasia ou Completo"
+              />
 
-      {/* Seção de Contato e Endereço */}
-      <div>
-        <h3 className="text-lg font-medium">Contato e Localização</h3>
-        <Separator className="my-2" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-          <ControlledInput
-            control={control}
-            name="phone"
-            label="Telefone"
-            maskType="phoneMobile"
-            placeholder="(99) 99999-9999"
-          />
-          <ControlledInput
-            control={control}
-            name="email"
-            label="E-mail"
-            type="email"
-            placeholder="contato@fornecedor.com"
-          />
-          <ControlledInput
-            control={control}
-            name="address.zipCode"
-            label="CEP *"
-            maskType="cep"
-            placeholder="00000-000"
-          />
-          <ControlledInput
-            placeholder=""
-            control={control}
-            name="address.city"
-            label="Cidade *"
-            disabled={isFetchingAddress}
-          />
-          <ControlledInput
-            placeholder=""
-            control={control}
-            name="address.state"
-            label="Estado *"
-            disabled={isFetchingAddress}
-          />
-        </div>
-      </div>
+              <ControlledInput
+                control={control}
+                name="legalName"
+                label="Razão Social"
+                placeholder="Nome legal da empresa (se aplicável)"
+              />
 
-      {/* Seção de Outras Informações */}
-      <div>
-        <h3 className="text-lg font-medium">Outras Informações</h3>
-        <Separator className="my-2" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-          <ControlledSelect
-            control={control}
-            options={[
-              { id: "30", name: "30 dias" },
-              { id: "60", name: "60 dias" },
-              { id: "90", name: "90 dias" },
-              { id: "120",name: "120 dias" },
-            ]}
-            name="defaultPaymentTerms"
-            label="Condições de Pagamento Padrão"
-            placeholder="Ex: 30 dias, 50% adiantado"
-          />
-        </div>
-        <ControlledTextarea
-          placeholder="Digite suas observações "
-          className="mt-4"
-          control={control}
-          name="description"
-          label="Observações"
-          limit={200}
-        />
-      </div>
+              <ControlledRadioGroup
+                control={control}
+                name="type"
+                label="Tipo de Pessoa"
+                options={[
+                  { label: "Pessoa Jurídica", value: "PJ" },
+                  { label: "Pessoa Física", value: "PF" },
+                ]}
+              />
 
-      <Button type="submit" className="w-full" disabled={isPending}>
-        {isPending ? "Salvando..." : "Salvar Fornecedor"}
-      </Button>
+              <ControlledInput
+                control={control}
+                name="document"
+                label={personType === "PJ" ? "CNPJ" : "CPF"}
+                maskType={personType === "PJ" ? "cnpj" : "cpf"}
+                placeholder={
+                  personType === "PJ" ? "Digite o CNPJ" : "Digite o CPF"
+                }
+                key={personType}
+              />
+            </div>
+          </div>
+
+          {/* Seção de Contato e Endereço */}
+          <div>
+            <h3 className="text-lg font-medium">Contato e Localização</h3>
+            <Separator className="my-2" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <ControlledInput
+                control={control}
+                name="phone"
+                label="Telefone"
+                maskType="phoneMobile"
+                placeholder="(99) 99999-9999"
+              />
+
+              <ControlledInput
+                control={control}
+                name="email"
+                label="E-mail"
+                type="email"
+                placeholder="contato@fornecedor.com"
+              />
+
+              <ControlledInput
+                control={control}
+                name="address.zipCode"
+                label="CEP *"
+                maskType="cep"
+                placeholder="00000-000"
+              />
+
+              <ControlledInput
+                placeholder=""
+                control={control}
+                name="address.city"
+                label="Cidade *"
+                disabled={isFetchingAddress}
+              />
+
+              <ControlledInput
+                placeholder=""
+                control={control}
+                name="address.state"
+                label="Estado *"
+                disabled={isFetchingAddress}
+              />
+            </div>
+          </div>
+
+          {/* Seção de Outras Informações */}
+          <div>
+            <h3 className="text-lg font-medium">Outras Informações</h3>
+            <Separator className="my-2" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+              <ControlledSelect
+                control={control}
+                options={[
+                  { id: "30", name: "30 dias" },
+                  { id: "60", name: "60 dias" },
+                  { id: "90", name: "90 dias" },
+                  { id: "120", name: "120 dias" },
+                ]}
+                name="defaultPaymentTerms"
+                label="Condições de Pagamento Padrão"
+                placeholder="Ex: 30 dias, 50% adiantado"
+              />
+            </div>
+
+            <ControlledTextarea
+              placeholder="Digite suas observações"
+              className="mt-4"
+              control={control}
+              name="description"
+              label="Observações"
+              limit={200}
+            />
+          </div>
+        </div>
+      </ScrollArea>
+
+      {/* Botão fixo na parte inferior - igual ao original */}
+      <div className="sticky bottom-0 bg-background py-4 border-t">
+        <Button type="submit" className="w-full" disabled={isPending}>
+          {isPending ? "Salvando..." : "Salvar Fornecedor"}
+        </Button>
+      </div>
     </form>
   );
 }
