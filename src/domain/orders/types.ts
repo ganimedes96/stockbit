@@ -7,8 +7,26 @@ export enum OrderStatus {
   Delivered = "delivered", // Entregue
   Cancelled = "cancelled", // Cancelado
   Refunded = "refunded", // Devolvido/Reembolsado
+  completed = "completed",
 }
 
+ export type DailySummary = {
+  totalRevenue: number;
+  totalSalesCount: number;
+  totalItemsSold: number;
+  averageTicket: number;
+  highestSaleValue: number;
+  lowestSaleValue: number;
+  salesByHour: Record<string, number>
+  salesByPaymentMethod: Record<PaymentMethodOrder, { total: number; count: number }>;
+};
+
+
+export enum OrderOrigin {
+  PDV = "pdv",
+  Catalog = "catalog",
+  Manual = "manual",
+}
 
 export enum PaymentMethodOrder {
   cash = "cash",
@@ -53,6 +71,7 @@ export type Order = {
   clientId?: string; // ID do cliente, se aplicável
   subtotal: number;
   total: number;
+  origin: OrderOrigin;
   paymentMethod: PaymentMethodOrder;
   shippingAddress?: ShippingAddress;
   notes?: string;

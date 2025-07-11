@@ -14,4 +14,5 @@ export enum QueryKeys {
   debtors = "debtors",
   metricsMovements = "metricsMovements",
   annualGains = "annualGains",
+  cashClosings = "cashClosings",
 }

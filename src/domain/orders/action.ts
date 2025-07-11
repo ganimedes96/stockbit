@@ -2,7 +2,7 @@
 
 import { db, firestore } from "@/lib/firebase/admin";
 import { Collections } from "@/lib/firebase/collections";
-import { OrderInput } from "./types"; // Importe TODOS os seus tipos e enums
+import { Order, OrderInput, OrderStatus } from "./types"; // Importe TODOS os seus tipos e enums
 import { ResponseServerAction, StatusServer } from "@/api/types";
 import { CreateClient } from "../clients/types";
 import { StockMovementType } from "../movements/types";
@@ -182,6 +182,161 @@ export async function updateOrderStatus(
     };
   } catch (error) {
     console.error("Erro ao atualizar status do pedido:", error);
+    const err = error as Error;
+    return {
+      status: StatusServer.error,
+      message: err.message,
+    };
+  }
+}
+
+export async function createPdvOrder(
+  companyId: string,
+  orderData: OrderInput
+): Promise<ResponseServerAction> {
+  try {
+    // A transação garante que todas as operações sejam atômicas.
+    await db.runTransaction(async (transaction) => {
+      const companyRef = db.collection(Collections.companies).doc(companyId);
+
+      // --- FASE 1: LEITURA E VALIDAÇÃO DO ESTOQUE ---
+      const productRefs = orderData.lineItems.map((item) =>
+        companyRef.collection(Collections.products).doc(item.productId)
+      );
+      const productSnaps = await transaction.getAll(...productRefs);
+
+      for (const [index, productSnap] of productSnaps.entries()) {
+        const item = orderData.lineItems[index];
+        if (!productSnap.exists) {
+          throw new Error(`Produto "${item.productName}" não encontrado.`);
+        }
+        const productData = productSnap.data() as Product;
+        const currentStock = productData.openingStock || 0;
+        if (item.quantity > currentStock) {
+          throw new Error(`Estoque insuficiente para "${productData.name}".`);
+        }
+      }
+
+      // --- FASE 2: OPERAÇÕES DE ESCRITA ---
+
+      // Cria uma referência para o novo pedido.
+      const newOrderRef = companyRef.collection(Collections.orders).doc();
+
+      // Itera novamente para enfileirar as escritas.
+      for (const [index, productSnap] of productSnaps.entries()) {
+        const item = orderData.lineItems[index];
+        const productData = productSnap.data() as Product;
+        const newStock = (productData.openingStock || 0) - item.quantity;
+
+        // Atualiza o estoque do produto.
+        transaction.update(productSnap.ref, { openingStock: newStock });
+
+        // Cria a movimentação de estoque.
+        const newMovementRef = companyRef
+          .collection(Collections.movements)
+          .doc();
+        const movementBody = {
+          type: StockMovementType.STOCK_OUT,
+          reason: "Venda PDV",
+          quantity: item.quantity,
+          productId: item.productId,
+          productName: productData.name,
+          productPrice: item.unitPrice,
+          orderId: newOrderRef.id,
+          description: "Venda PDV - " + productData.name,
+          createdAt: firestore.Timestamp.now(),
+        };
+        transaction.set(newMovementRef, movementBody);
+      }
+
+      // Prepara o corpo final do pedido.
+      const orderBody = {
+        ...orderData,
+        createdAt: firestore.Timestamp.now(),
+        updatedAt: firestore.Timestamp.now(),
+      };
+
+      // Cria o documento do pedido.
+      transaction.set(newOrderRef, orderBody);
+    });
+
+    return {
+      status: StatusServer.success,
+      message: "Venda registrada com sucesso!",
+    };
+  } catch (error) {
+    console.error("Erro ao registrar venda do PDV:", error);
+    const err = error as Error;
+    return {
+      status: StatusServer.error,
+      message: err.message,
+    };
+  }
+}
+
+export async function cancelOrderPdv(
+  companyId: string,
+  orderId: string
+): Promise<ResponseServerAction> {
+  try {
+    await db.runTransaction(async (transaction) => {
+      const companyRef = db.collection(Collections.companies).doc(companyId);
+      const orderRef = companyRef.collection(Collections.orders).doc(orderId);
+
+      // Verifica se o pedido existe
+      const orderSnap = await orderRef.get();
+      if (!orderSnap.exists) {
+        throw new Error("Pedido nao encontrado.");
+      }
+
+      const orderData = orderSnap.data() as Order;
+
+      // Atualiza o status do pedido
+      await orderRef.update({
+        status: OrderStatus.Cancelled,
+        updatedAt: firestore.Timestamp.now(),
+      });
+
+      // Atualiza o estoque dos produtos
+      const productRefs = orderData.lineItems.map((item) =>
+        companyRef.collection(Collections.products).doc(item.productId)
+      );
+      const productSnaps = await transaction.getAll(...productRefs);
+
+      for (const [index, productSnap] of productSnaps.entries()) {
+        const item = orderData.lineItems[index];
+        const productData = productSnap.data() as Product;
+        const currentStock = productData.openingStock || 0;
+        const newStock = currentStock + item.quantity;
+
+        // Atualiza o estoque do produto.
+        transaction.update(productSnap.ref, { openingStock: newStock });
+
+        // Cria a movimentação de estoque.
+        const newMovementRef = companyRef
+          .collection(Collections.movements)
+          .doc();
+        const movementBody = {
+          type: StockMovementType.STOCK_IN,
+          reason: "Cancelamento PDV",
+          quantity: item.quantity,
+          productId: item.productId,
+          productName: productData.name,
+          productPrice: item.unitPrice,
+          orderId: orderId,
+          description: "Cancelamento PDV - " + productData.name,
+          createdAt: firestore.Timestamp.now(),
+        };
+        transaction.set(newMovementRef, movementBody);
+      }
+    });
+
+    return {
+      status: StatusServer.success,
+      message: "Pedido cancelado com sucesso!",
+    };
+  } catch (error) {
+    console.error("Erro ao cancelar pedido:", error);
     const err = error as Error;
     return {
       status: StatusServer.error,

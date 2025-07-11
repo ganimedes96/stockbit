@@ -11,4 +11,5 @@ export enum Collections {
   deleted = "deleted",
   products = "products",
   clients = "clients",
+  cashSessions = "cashSessions",
 }

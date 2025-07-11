@@ -194,10 +194,10 @@ export function NeighborhoodsList({ user }: NeighborhoodsListProps) {
       </Card>
 
       <div className="sm:hidden space-y-4 ">
-        
-            <h2 className="text-xl sm:text-4xl font-semibold mb-4">Bairros de Entrega</h2>
-           
-          
+        <h2 className="text-xl sm:text-4xl font-semibold mb-4">
+          Bairros de Entrega
+        </h2>
+
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <Input
             icon={<Search className="h-4 w-4 text-muted-foreground" />}

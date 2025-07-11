@@ -1,15 +1,23 @@
-import type { NextConfig } from "next";
+import withSerwist from "@serwist/next";
 
-const nextConfig: NextConfig = {
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  // Sua configuração existente do Next.js
   images: {
     domains: ["storage.googleapis.com"],
   },
   experimental: {
     optimizePackageImports: ["lucide-react", "recharts"],
     serverActions: {
-      bodySizeLimit: "5mb",
+      // CORREÇÃO: Usamos o valor em bytes em vez da string "5mb"
+      bodySizeLimit: 5242880, 
     },
   },
 };
 
-export default nextConfig;
+// Envolve sua configuração do Next.js com a do Serwist
+export default withSerwist({
+  swSrc: "src/app/sw.ts",
+  swDest: "public/sw.js",
+  disable: process.env.NODE_ENV === "development",
+})(nextConfig);

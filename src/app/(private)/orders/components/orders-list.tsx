@@ -45,7 +45,7 @@ import {
   useRealtimeOrders,
   useUpdatOrderStatus,
 } from "@/domain/orders/queries";
-import { Order, OrderStatus } from "@/domain/orders/types";
+import { Order, OrderOrigin, OrderStatus } from "@/domain/orders/types";
 import { User } from "@/domain/user/types";
 import { useDebounce } from "@/hooks/use-debounce";
 import { formatCurrency } from "@/utils/text/format";
@@ -108,6 +108,11 @@ export const orderStatusMap: Record<
     color: "bg-cyan-100 text-cyan-800",
     icon: CheckCircle,
   },
+  [OrderStatus.completed]: {
+    label: "Finalizado",
+    color: "bg-green-200 text-green-900",
+    icon: CheckCircle,
+  },
 };
 
 interface OrderProps {
@@ -127,9 +132,9 @@ export function OrdersList({ user }: OrderProps) {
   const [confirmationState, setConfirmationState] =
     useState<ConfirmationState>(null);
 
-  const debouncedSearchTerm = useDebounce(searchTerm, 500);
-  const { data: neighborhoods } = useGetNeighborhoods(user.company.id);
-
+    const { data: neighborhoods } = useGetNeighborhoods(user.company.id);
+    
+    const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const { data: filteredOrders, isLoading } = useRealtimeOrders(
     user.company.id,
     {
@@ -231,7 +236,7 @@ export function OrdersList({ user }: OrderProps) {
                       {isLoading ? (
                         <TableSkeleton columns={6} rows={10} />
                       ) : (filteredOrders ?? []).length > 0 ? (
-                        (filteredOrders ?? []).map((order: Order) => {
+                        (filteredOrders ?? []).filter((order: Order) => order.origin === OrderOrigin.Catalog).map((order: Order) => {
                           const statusInfo = orderStatusMap[
                             order.status as OrderStatus
                           ] || {

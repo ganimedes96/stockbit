@@ -23,6 +23,7 @@ export interface Limit {
   dashboard: string;
   employees: number;
   reports: number;
+  pdv: boolean;
 }
 
 export interface Subscription {

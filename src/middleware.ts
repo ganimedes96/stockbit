@@ -104,5 +104,18 @@ export default async function middleware(request: NextRequest) {
 }
 
 export const config: MiddlewareConfig = {
-  matcher: ["/((?!api|_next|favicon.ico|sitemap.xml|robots.txt|og.png).*)"],
+  /*
+   * Corresponde a todos os caminhos de requisição, EXCETO para:
+   * - rotas de API (/api)
+   * - arquivos estáticos do Next.js (/_next/static)
+   * - arquivos de imagem do Next.js (/_next/image)
+   * - o arquivo de favicon (favicon.ico)
+   * - o arquivo do Service Worker (sw.js)
+   * - qualquer arquivo dentro da pasta /icons/
+   *
+   * Isso garante que o middleware só rode em páginas reais da sua aplicação.
+   */
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|sw.js|icons|manifest.webmanifest|screenshots).*)",
+  ],
 };

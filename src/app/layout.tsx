@@ -1,5 +1,5 @@
 import type React from "react";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/providers/auth-provider";
@@ -14,45 +14,21 @@ const PJS = Plus_Jakarta_Sans({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "stock-bit",
   description: "Sistema de gerenciamento de estoque com catálogo de produtos online.",
-  openGraph: {
-    title: "StockBit",
-    description: "Organize seu estoque e exiba seus produtos com facilidade em um catálogo online.",
-    url: "https://stockdemo.app",
-    siteName: "Stockdemo",
-    images: [
-      {
-        url: "https://stockbit.app/og-image.png", 
-        width: 1920,
-        height: 1080,
-      },
-    ],
-    type: "website",
-    locale: "pt-BR",
+  manifest: "/manifest.webmanifest", // O Next.js recomenda usar .webmanifest
+  icons: {
+    icon: "/icons/icon-96x96.png",
+    apple: "/icons/icon-192x192.png",
   },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
+
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Stock-Bit",
   },
-  twitter: {
-    title: "StockBit",
-    description: "Gerencie seu estoque e catálogo de produtos de forma simples e eficiente.",
-    card: "summary_large_image",
-  },
-  keywords: [
-    "estoque",
-    "sistema de estoque",
-    "catálogo online",
-    "inventário",
-    "controle de produtos",
-    "gestão de estoque",
-  ],
+};
+
+export const viewport: Viewport = {
+  themeColor: "#0f172a",
 };
 
 export default function RootLayout({
@@ -62,6 +38,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+        {/* Adicionar a meta tag theme-color diretamente no head garante
+            que a cor da barra de status do navegador seja aplicada de forma consistente,
+            especialmente em dispositivos móveis. */}
+        {/* <meta name="theme-color" content="#0f172a" /> */}
+      </head>
       <body className={`${PJS.className} antialiased`}>
         <ThemeProvider
           attribute="class"

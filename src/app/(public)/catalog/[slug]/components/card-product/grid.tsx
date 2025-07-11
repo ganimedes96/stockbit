@@ -10,7 +10,6 @@ import { Plus } from "lucide-react";
 import { formatCurrency } from "@/utils/text/format";
 import { isProductNew } from "../helpers";
 
-// A interface agora espera o nome da categoria e uma função para adicionar ao carrinho
 interface CardProductProps {
   product: Product;
   categoryName: string;
@@ -23,16 +22,14 @@ export function Grid({
   onAddToCart,
 }: CardProductProps) {
   const { name, description, photo, salePrice } = product;
+
   const imageSrc =
     typeof photo === "string" && photo !== "" ? photo : ImmageDefault;
-
-
-
 
   const isNew = product.createdAt ? isProductNew(product.createdAt) : false;
 
   return (
-    <Card className="min-w-80 flex flex-col justify-between ">
+    <Card>
       <div>
         <div className="aspect-square relative">
           <Image
@@ -41,27 +38,30 @@ export function Grid({
             fill
             className="object-cover transition-transform duration-300 group-hover:scale-105"
           />
-           {isNew && (
-            <Badge className="absolute top-2 left-2 bg-emerald-400 text-white">
-                Novo
+          {isNew && (
+            <Badge className="absolute top-2 left-2 bg-emerald-400 text-white text-[10px] xs:text-xs">
+              Novo
             </Badge>
-        )}
-           
+          )}
         </div>
-        <div className="p-4">
-          <div className="mb-2">
-            <Badge variant="secondary" className="text-xs">
-              {/* Usa a prop diretamente, com um fallback */}
+
+        <div className="p-2 xs:p-3 sm:p-4">
+          <div className="mb-1 xs:mb-2">
+            <Badge variant="secondary" className="text-[10px] xs:text-xs">
               {categoryName || "Sem Categoria"}
             </Badge>
           </div>
-          <h3 className="font-semibold text-lg mb-1 truncate block max-w-[250px]" title={name}>
+
+          <h3
+            className="font-semibold text-sm xs:text-base sm:text-lg mb-1 truncate block max-w-full"
+            title={name}
+          >
             {name}
           </h3>
-        
+
           {product.description && (
             <p
-              className="truncate block max-w-300px] text-gray-400 text-sm mb-3 h-10 line-clamp-2"
+              className="truncate block text-[11px] xs:text-xs sm:text-sm text-gray-400 mb-2 sm:mb-3 h-10 line-clamp-2"
               title={description}
             >
               {description}
@@ -70,25 +70,27 @@ export function Grid({
         </div>
       </div>
 
-      <div className="p-4 flex flex-col items-start justify-center gap-2">
-        <span className="text-xl font-bold text-green-600">
+      <div className="p-2 xs:p-3 sm:p-4 flex flex-col items-start justify-center gap-1 xs:gap-2">
+        <span className="text-base xs:text-lg sm:text-xl font-bold text-green-600">
           {formatCurrency(salePrice)}
         </span>
+
         <span
-          className={`text-sm ${
+          className={`text-[11px] xs:text-xs sm:text-sm ${
             product.openingStock > 0 ? "text-green-600" : "text-red-600"
           }`}
         >
           {product.openingStock > 0 ? `Em estoque` : `Fora de estoque`}
         </span>
+
         <Button
           disabled={product.openingStock === 0}
-          className="w-full disabled:bg-gray-300/20 disabled:text-gray-500 disabled:cursor-not-allowed"
+          className="w-full text-[11px] xs:text-xs sm:text-sm h-7 xs:h-8 sm:h-9 disabled:bg-gray-300/20 disabled:text-gray-500 disabled:cursor-not-allowed"
           onClick={() => onAddToCart(product)}
           size="sm"
           type="button"
         >
-          <Plus className="h-4 w-4 mr-1" />
+          <Plus className="h-3 w-3 xs:h-4 xs:w-4 mr-1" />
           Adicionar
         </Button>
       </div>

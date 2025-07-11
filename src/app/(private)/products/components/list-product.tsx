@@ -61,6 +61,8 @@ export function ListProduct({ companyId, user }: ListProductProps) {
     return { variant: "success" as const, label: "Disponível" };
   };
 
+ 
+
   const categoryMap = useMemo(() => {
     if (!categories) {
       return new Map<string, string>();

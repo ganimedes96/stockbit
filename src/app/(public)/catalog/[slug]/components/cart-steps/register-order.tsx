@@ -21,6 +21,7 @@ import {
   LineItem,
   ShippingAddress,
   PaymentMethodOrder,
+  OrderOrigin,
 } from "@/domain/orders/types";
 import { ResponseServerAction, StatusServer } from "@/api/types";
 import { GlobalFormSheet } from "@/components/form/containers/global-form-sheet";
@@ -124,6 +125,7 @@ export function RegisterOrder({ user }: RegisterOrderProps) {
       customerName: data.customerName,
       customerEmail: data.customerEmail,
       customerPhone: data.customerPhone,
+      origin: OrderOrigin.Catalog,
       subtotal,
       shippingCost: 0,
       discounts: 0,
