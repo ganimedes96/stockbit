@@ -132,9 +132,9 @@ export function OrdersList({ user }: OrderProps) {
   const [confirmationState, setConfirmationState] =
     useState<ConfirmationState>(null);
 
-    const { data: neighborhoods } = useGetNeighborhoods(user.company.id);
-    
-    const debouncedSearchTerm = useDebounce(searchTerm, 500);
+  const { data: neighborhoods } = useGetNeighborhoods(user.company.id);
+
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const { data: filteredOrders, isLoading } = useRealtimeOrders(
     user.company.id,
     {
@@ -236,78 +236,86 @@ export function OrdersList({ user }: OrderProps) {
                       {isLoading ? (
                         <TableSkeleton columns={6} rows={10} />
                       ) : (filteredOrders ?? []).length > 0 ? (
-                        (filteredOrders ?? []).filter((order: Order) => order.origin === OrderOrigin.Catalog).map((order: Order) => {
-                          const statusInfo = orderStatusMap[
-                            order.status as OrderStatus
-                          ] || {
-                            label: "Desconhecido",
-                            color: "bg-gray-100 text-gray-800",
-                            icon: AlertCircle,
-                          };
-                          return (
-                            <TableRow key={order.id}>
-                              <TableCell className="font-mono text-sm text-center">
-                                {order.orderNumber}
-                              </TableCell>
-                              <TableCell className="text-center">
-                                <div className="font-medium">
-                                  {order.customerName}
-                                </div>
-                                <div className="text-xs text-muted-foreground">
-                                  {order.customerEmail}
-                                </div>
-                              </TableCell>
-                              <TableCell className="text-center">
-                                {format(order.createdAt, "dd/MM/yyyy - HH:mm")}
-                              </TableCell>
-                              <TableCell className="text-center">
-                                {/* 2. Badge atualizado para usar o novo mapa de status */}
-                                <Badge
-                                  variant="outline"
-                                  className={`font-semibold ${statusInfo.color}`}
-                                >
-                                  <statusInfo.icon className="w-3 h-3 mr-2" />
-                                  {statusInfo.label}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="text-center font-medium">
-                                {formatCurrency(order.total)}
-                              </TableCell>
-                              <TableCell className="gap-2 flex flex-row items-center justify-center">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => setSelectedOrder(order)}
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                                <Select
-                                  value={order.status}
-                                  onValueChange={(newStatus) =>
-                                    handleStatusChange(
-                                      order,
-                                      newStatus as OrderStatus
-                                    )
-                                  }
-                                  disabled={isPending}
-                                >
-                                  <SelectTrigger className=" h-9 ">
-                                    <SelectValue placeholder="Alterar status" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {Object.entries(orderStatusMap).map(
-                                      ([key, value]) => (
-                                        <SelectItem key={key} value={key}>
-                                          {value.label}
-                                        </SelectItem>
+                        (filteredOrders ?? [])
+                          .filter(
+                            (order: Order) =>
+                              order.origin === OrderOrigin.Catalog
+                          )
+                          .map((order: Order) => {
+                            const statusInfo = orderStatusMap[
+                              order.status as OrderStatus
+                            ] || {
+                              label: "Desconhecido",
+                              color: "bg-gray-100 text-gray-800",
+                              icon: AlertCircle,
+                            };
+                            return (
+                              <TableRow key={order.id}>
+                                <TableCell className="font-mono text-sm text-center">
+                                  {order.orderNumber}
+                                </TableCell>
+                                <TableCell className="text-center">
+                                  <div className="font-medium">
+                                    {order.customerName}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    {order.customerEmail}
+                                  </div>
+                                </TableCell>
+                                <TableCell className="text-center">
+                                  {format(
+                                    order.createdAt,
+                                    "dd/MM/yyyy - HH:mm"
+                                  )}
+                                </TableCell>
+                                <TableCell className="text-center">
+                                  {/* 2. Badge atualizado para usar o novo mapa de status */}
+                                  <Badge
+                                    variant="outline"
+                                    className={`font-semibold ${statusInfo.color}`}
+                                  >
+                                    <statusInfo.icon className="w-3 h-3 mr-2" />
+                                    {statusInfo.label}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="text-center font-medium">
+                                  {formatCurrency(order.total)}
+                                </TableCell>
+                                <TableCell className="gap-2 flex flex-row items-center justify-center">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setSelectedOrder(order)}
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                  <Select
+                                    value={order.status}
+                                    onValueChange={(newStatus) =>
+                                      handleStatusChange(
+                                        order,
+                                        newStatus as OrderStatus
                                       )
-                                    )}
-                                  </SelectContent>
-                                </Select>
-                              </TableCell>
-                            </TableRow>
-                          );
-                        })
+                                    }
+                                    disabled={isPending}
+                                  >
+                                    <SelectTrigger className=" h-9 ">
+                                      <SelectValue placeholder="Alterar status" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {Object.entries(orderStatusMap).map(
+                                        ([key, value]) => (
+                                          <SelectItem key={key} value={key}>
+                                            {value.label}
+                                          </SelectItem>
+                                        )
+                                      )}
+                                    </SelectContent>
+                                  </Select>
+                                </TableCell>
+                              </TableRow>
+                            );
+                          })
                       ) : (
                         <TableRow>
                           <TableCell
@@ -330,12 +338,12 @@ export function OrdersList({ user }: OrderProps) {
         </Card>
         <div className="block md:hidden space-y-4 ">
           <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold">Pedidos</h2>
-                <CopyLink
+            <h2 className="text-xl font-bold">Pedidos</h2>
+            <CopyLink
               available={user?.isTrial || user?.subscription.isSubscribed}
               pathname={`catalog/${user.company.slug}`}
               title="Link do catálogo "
-            />      
+            />
           </div>
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <Input
@@ -368,15 +376,17 @@ export function OrdersList({ user }: OrderProps) {
                 <Skeleton key={i} className="h-40 w-full rounded-lg" />
               ))
             ) : filteredOrders.length > 0 ? (
-              filteredOrders.map((order: Order) => (
-                <MobileOrderCard
-                  key={order.id}
-                  order={order}
-                  onStatusChange={handleStatusChange}
-                  onViewDetails={setSelectedOrder}
-                  isPending={isPending}
-                />
-              ))
+              (filteredOrders ?? [])
+                .filter((order: Order) => order.origin === OrderOrigin.Catalog)
+                .map((order: Order) => (
+                  <MobileOrderCard
+                    key={order.id}
+                    order={order}
+                    onStatusChange={handleStatusChange}
+                    onViewDetails={setSelectedOrder}
+                    isPending={isPending}
+                  />
+                ))
             ) : (
               <div className="h-48 text-center text-muted-foreground flex flex-col items-center justify-center">
                 <Package className="mx-auto mb-2 h-8 w-8" />
