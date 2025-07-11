@@ -70,7 +70,7 @@ export function useOfflineSync(companyId: string) {
     if (isOnline) {
       syncPendingOrders();
     }
-  }, [isOnline, createPdvOrder]); // Depende de 'isOnline' e da função de mutação
+  }, [isOnline, createPdvOrder, isSyncing]); // Depende de 'isOnline' e da função de mutação
 
   // Função para salvar um pedido offline (sem alterações)
   const saveOrderOffline = async (orderData: OrderInput) => {

@@ -229,7 +229,7 @@ export function PDVSystem({ user }: PDVSystemProps) {
     if (!products) return [];
     if (activeCategoryId === "all") return products.filter((p) => p.isActive);
     return products.filter(
-      (p) => p.isActive && p.categoryId === activeCategoryId
+      (p) => p.categoryId === activeCategoryId
     );
   }, [products, activeCategoryId]);
 

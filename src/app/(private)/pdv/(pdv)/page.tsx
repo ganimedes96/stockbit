@@ -1,6 +1,7 @@
 import { Header } from "@/components/header/header";
 import { getUser } from "@/domain/user/server";
 import { PDVSystem } from "./components/pdv-system";
+import UnderDevelopment from "@/components/developing";
 
 export default async function PDV() {
   const user = await getUser();
@@ -17,13 +18,7 @@ export default async function PDV() {
         {user.limit.pdv ? (
           <PDVSystem user={user} />
         ) : (
-          <div>
-            <h1>Seu plano atual não permite acesso ao PDV.</h1>
-            <p>
-              Por favor, entre em contato com o suporte para obter mais
-              informações.
-            </p>
-          </div>
+          <UnderDevelopment />
         )}
       </div>
     </div>
