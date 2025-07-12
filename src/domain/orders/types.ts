@@ -69,6 +69,7 @@ export type Order = {
   shippingCost: number;
   discounts?: number;
   clientId?: string; // ID do cliente, se aplicável
+  companyId?: string;
   subtotal: number;
   total: number;
   origin: OrderOrigin;

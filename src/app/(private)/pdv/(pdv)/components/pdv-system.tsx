@@ -41,7 +41,7 @@ import {
   useGetOpenCashSession,
   useOpenCashSession,
 } from "@/domain/cash-closing/queries";
-import { useOfflineSync } from "@/hooks/use-offline-sync";
+import { saveOrderToQueue } from "@/lib/db/indexed-db";
 
 // Tipagem para os itens do carrinho
 type CartItem = Product & { quantity: number };
@@ -52,7 +52,7 @@ interface PDVSystemProps {
 
 export function PDVSystem({ user }: PDVSystemProps) {
   // --- ESTADOS DO COMPONENTE ---
-  // const [isCashDrawerOpen, setIsCashDrawerOpen] = useState(false);
+
   const [shouldOpenDrawerModal, setShouldOpenDrawerModal] = useState(false);
   const [isBlockedByOldSession, setIsBlockedByOldSession] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -60,10 +60,8 @@ export function PDVSystem({ user }: PDVSystemProps) {
   const [scannedCode, setScannedCode] = useState<string>("");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
-  const { isOnline, isSyncing, saveOrderOffline } = useOfflineSync(
-    user.company.id
-  );
-  // --- BUSCA DE DADOS ---
+  const [isOnline, setIsOnline] = useState(true);
+
   const { data: products, isLoading: isLoadingProducts } = useProductList(
     user.company.id
   );
@@ -76,9 +74,8 @@ export function PDVSystem({ user }: PDVSystemProps) {
 
   const { mutate: openCashSession } = useOpenCashSession(user.company.id);
 
-  const { mutate: createOrder, isPending: isLoadingOrder } = useCreatePdvOrder(
-    user.company.id
-  );
+  const { mutate: createPdvOrder, isPending: isLoadingOrder } =
+    useCreatePdvOrder(user.company.id);
 
   const isLoading = isLoadingProducts || isLoadingCategories;
 
@@ -183,18 +180,16 @@ export function PDVSystem({ user }: PDVSystemProps) {
     );
   };
 
-  // --- LÓGICA DO LEITOR DE CÓDIGO DE BARRAS ---
+  // --- LÓGICA DE CONTROLE (LEITOR, FULLSCREEN, OFFLINE) ---
   useEffect(() => {
     let barcodeBuffer = "";
     let barcodeTimer: NodeJS.Timeout;
-
     const handleKeyDown = (event: KeyboardEvent) => {
       if (
         event.target instanceof HTMLInputElement ||
         event.target instanceof HTMLTextAreaElement
-      ) {
+      )
         return;
-      }
       if (event.key === "Enter") {
         event.preventDefault();
         if (barcodeBuffer.length > 0) {
@@ -219,18 +214,33 @@ export function PDVSystem({ user }: PDVSystemProps) {
         setScannedCode("");
       }, 150);
     };
-
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [products, addProductToCart]); // Depende de 'products' para poder fazer a busca
+
+    const onFullscreenChange = () =>
+      setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("fullscreenchange", onFullscreenChange);
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+      document.body.style.overflow = "auto";
+    };
+  }, [products, addProductToCart]);
 
   // --- FILTRAGEM DOS PRODUTOS PARA EXIBIÇÃO ---
   const filteredProducts = useMemo(() => {
     if (!products) return [];
     if (activeCategoryId === "all") return products.filter((p) => p.isActive);
-    return products.filter(
-      (p) => p.categoryId === activeCategoryId
-    );
+    return products.filter((p) => p.categoryId === activeCategoryId);
   }, [products, activeCategoryId]);
 
   useEffect(() => {
@@ -248,17 +258,18 @@ export function PDVSystem({ user }: PDVSystemProps) {
     };
   }, []);
 
-  const handleConfirmSale = (paymentMethod: PaymentMethodOrder) => {
+  const handleConfirmSale = async (paymentMethod: PaymentMethodOrder) => {
     if (cart.length === 0) {
       toast.error("O carrinho está vazio.");
       return;
     }
-
     // Monta o objeto OrderInput final
     const orderInput: OrderInput = {
       orderNumber: `#${Date.now().toString().slice(-4)}`,
       status: OrderStatus.completed, // PDV geralmente já é entregue
       origin: OrderOrigin.PDV,
+      clientId: user.id,
+      companyId: user.company.id,
       lineItems: cart.map((item) => ({
         productId: item.id,
         productName: item.name,
@@ -276,24 +287,21 @@ export function PDVSystem({ user }: PDVSystemProps) {
       paymentMethod: paymentMethod, // Usa o método de pagamento vindo do modal
     };
 
-    // Chama a mutação do TanStack Query
-    if (isOnline) {
-      // Se estiver online, tenta enviar diretamente
-      createOrder(orderInput, {
-        onSuccess: (response) => {
-          if (response.status === "success") {
-            setCart([]);
-            setIsPaymentModalOpen(false);
-          }
+    try {   
+      if (isOnline) throw new Error("Offline");
+
+      createPdvOrder(orderInput, {
+        onSuccess: () => {
+          setCart([]); // Limpa o carrinho
         },
       });
-    } else {
-      // Se estiver offline, salva no banco de dados local
-      saveOrderOffline(orderInput).then(() => {
-        setCart([]);
-        setIsPaymentModalOpen(false);
-      });
-    }
+    } catch (error) {
+      console.warn("Falha na conexão, salvando venda offline:", error);
+      await saveOrderToQueue(orderInput);
+      toast.info("Venda salva offline! Será sincronizada depois.");
+      setCart([]);
+      setIsPaymentModalOpen(false);
+    } // Chama a mutação do TanStack Query
   };
 
   const handleOpenCashDrawer = (initialAmount: number) => {
@@ -466,9 +474,7 @@ export function PDVSystem({ user }: PDVSystemProps) {
                 )}
                 <span>
                   {isOnline
-                    ? isSyncing
-                      ? "Sincronizando..."
-                      : "Online"
+                    ?  "Online"
                     : "Offline"}
                 </span>
               </div>
