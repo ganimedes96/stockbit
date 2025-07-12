@@ -263,6 +263,8 @@ export function PDVSystem({ user }: PDVSystemProps) {
       toast.error("O carrinho está vazio.");
       return;
     }
+    console.log(paymentMethod);
+    
     // Monta o objeto OrderInput final
     const orderInput: OrderInput = {
       orderNumber: `#${Date.now().toString().slice(-4)}`,
@@ -288,8 +290,9 @@ export function PDVSystem({ user }: PDVSystemProps) {
     };
 
     try {   
-      if (isOnline) throw new Error("Offline");
-
+      if (!isOnline) throw new Error("Offline");
+      console.log(isOnline);
+      
       createPdvOrder(orderInput, {
         onSuccess: () => {
           setCart([]); // Limpa o carrinho
