@@ -88,7 +88,7 @@ export async function Header({ children, user }: HeaderProps) {
       <Separator className="w-full bg-yellow-500/55" />
 
       {/* Nav com scroll horizontal já configurado */}
-      <Nav items={navItems} />
+      <Nav items={navItems}/>
     </header>
   );
 }
