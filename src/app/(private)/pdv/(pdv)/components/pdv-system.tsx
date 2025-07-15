@@ -42,6 +42,10 @@ import {
   useOpenCashSession,
 } from "@/domain/cash-closing/queries";
 import { saveOrderToQueue } from "@/lib/db/indexed-db";
+import { isToday } from "date-fns";
+import { CashSessionStatus, ClosingInput } from "@/domain/cash-closing/types";
+
+const CASH_DRAWER_STATUS_KEY = "cashDrawerStatus";
 
 // Tipagem para os itens do carrinho
 type CartItem = Product & { quantity: number };
@@ -52,7 +56,9 @@ interface PDVSystemProps {
 
 export function PDVSystem({ user }: PDVSystemProps) {
   // --- ESTADOS DO COMPONENTE ---
-
+  const [activeSession, setActiveSession] = useState<ClosingInput | null>(null);
+  // Controla se a verificação inicial com o Firestore já foi feita
+  const [isSessionVerified, setIsSessionVerified] = useState(false);
   const [shouldOpenDrawerModal, setShouldOpenDrawerModal] = useState(false);
   const [isBlockedByOldSession, setIsBlockedByOldSession] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -78,6 +84,28 @@ export function PDVSystem({ user }: PDVSystemProps) {
     useCreatePdvOrder(user.company.id);
 
   const isLoading = isLoadingProducts || isLoadingCategories;
+
+  // --- LÓGICA DE GERENCIAMENTO DE SESSÃO ---
+  useEffect(() => {
+    // 1. Tenta carregar a sessão do localStorage na primeira renderização
+    try {
+      const savedStatus = localStorage.getItem(CASH_DRAWER_STATUS_KEY);
+      if (savedStatus) {
+        const session = JSON.parse(savedStatus);
+        // Garante que a sessão salva é de hoje
+        if (isToday(new Date(session.startingOpen))) {
+          setActiveSession(session);
+        } else {
+          // Se for de um dia anterior, remove do localStorage para forçar o fechamento
+          localStorage.removeItem(CASH_DRAWER_STATUS_KEY);
+        }
+      }
+    } catch (error) {
+      console.error("Falha ao ler status do caixa:", error);
+    }
+    // Marca que a verificação inicial (local) foi feita
+    setIsSessionVerified(true);
+  }, []);
 
   const subtotal = useMemo(() => {
     return cart.reduce(
@@ -113,6 +141,7 @@ export function PDVSystem({ user }: PDVSystemProps) {
       }
     }
   }, [isOpenSession, isLoadingOpenSession]);
+
   const handleFullscreenToggle = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch((err) => {
@@ -258,13 +287,28 @@ export function PDVSystem({ user }: PDVSystemProps) {
     };
   }, []);
 
+  const registerSyncTask = async () => {
+    // Verifica se o navegador suporta o Service Worker e o SyncManager
+    if ("serviceWorker" in navigator && "SyncManager" in window) {
+      try {
+        const sw = await navigator.serviceWorker.ready;
+        // Registra uma tag de sincronização. O navegador irá disparar o evento 'sync'
+        // no Service Worker com esta tag assim que a conexão for estável.
+        await sw.sync.register("sync-pending-orders");
+        console.log(
+          "Tarefa de sincronização 'sync-pending-orders' registrada."
+        );
+      } catch (error) {
+        console.error("Falha ao registrar a tarefa de sincronização:", error);
+      }
+    }
+  };
   const handleConfirmSale = async (paymentMethod: PaymentMethodOrder) => {
     if (cart.length === 0) {
       toast.error("O carrinho está vazio.");
       return;
     }
-    console.log(paymentMethod);
-    
+
     // Monta o objeto OrderInput final
     const orderInput: OrderInput = {
       orderNumber: `#${Date.now().toString().slice(-4)}`,
@@ -289,30 +333,70 @@ export function PDVSystem({ user }: PDVSystemProps) {
       paymentMethod: paymentMethod, // Usa o método de pagamento vindo do modal
     };
 
-    try {   
+    try {
       if (!isOnline) throw new Error("Offline");
-      console.log(isOnline);
-      
+
       createPdvOrder(orderInput, {
         onSuccess: () => {
-          setCart([]); // Limpa o carrinho
+          setCart([]);
+          setIsPaymentModalOpen(false);
         },
       });
     } catch (error) {
       console.warn("Falha na conexão, salvando venda offline:", error);
       await saveOrderToQueue(orderInput);
-      toast.info("Venda salva offline! Será sincronizada depois.");
-      setCart([]);
+      await registerSyncTask();
       setIsPaymentModalOpen(false);
-    } // Chama a mutação do TanStack Query
+      setCart([]);
+      toast.info("Venda salva offline! Será sincronizada depois.");
+    } finally {
+      setIsPaymentModalOpen(false);
+      setCart([]);
+    }
   };
 
   const handleOpenCashDrawer = (initialAmount: number) => {
-    openCashSession({ openingBalance: initialAmount, operationId: user.id });
+    openCashSession(
+      {
+        openingBalance: initialAmount,
+        operationId: user.id, // Corrigido para 'operatorId'
+      },
+      {
+        onSuccess: (response) => {
+          if (response.status === "success" && response.sessionId) {
+            // 1. Constrói o objeto da nova sessão localmente
+            const newSession: ClosingInput = {
+              id: response.sessionId,
+              status: CashSessionStatus.OPEN,
+              openingBalance: initialAmount,
+              operatorId: user.id,
+              startingOpen: new Date(),
+              countedCashAmount: initialAmount,
+            };
+
+            // 2. Salva a nova sessão no localStorage E no estado do React
+            localStorage.setItem(
+              CASH_DRAWER_STATUS_KEY,
+              JSON.stringify(newSession)
+            );
+            setActiveSession(newSession);
+            toast.success(`Caixa aberto com ${formatCurrency(initialAmount)}`);
+          }
+        },
+      }
+    );
   };
 
+  if (!isSessionVerified) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
   // Se o caixa não estiver aberto, mostra o modal de abertura
-  if (shouldOpenDrawerModal) {
+  if (shouldOpenDrawerModal && !activeSession) {
     return (
       <OpenCashDrawerModal
         user={user}
@@ -475,11 +559,7 @@ export function PDVSystem({ user }: PDVSystemProps) {
                 ) : (
                   <WifiOff className="h-4 w-4" />
                 )}
-                <span>
-                  {isOnline
-                    ?  "Online"
-                    : "Offline"}
-                </span>
+                <span>{isOnline ? "Online" : "Offline"}</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground bg-gray-100 dark:bg-gray-800 px-3 py-1 rounded-full">
                 <Barcode className="h-4 w-4" />

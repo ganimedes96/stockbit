@@ -87,9 +87,17 @@ export function SuppliersList({ user }: SuppliersListProps) {
   };
 
   return (
-    <div className="w-full">
-      <div className="w-full flex items-center justify-end p-6">
-        <FormSheet
+    <div className="w-full mt-6">
+      
+      <Card className="mx-6 flex flex-col gap-6">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <div>
+          <CardTitle>Fornecedores</CardTitle>
+          <CardDescription>
+            Gerencie os fornecedores da sua empresa.
+          </CardDescription>
+          </div>
+           <FormSheet
           title="Adicionar Fornecedor"
           description="Registre um novo fornecedor"
           formComponent={FormSupplier}
@@ -106,13 +114,6 @@ export function SuppliersList({ user }: SuppliersListProps) {
             </Button>
           }
         />
-      </div>
-      <Card className="mx-6 flex flex-col gap-6">
-        <CardHeader>
-          <CardTitle>Fornecedores</CardTitle>
-          <CardDescription>
-            Gerencie os fornecedores da sua empresa.
-          </CardDescription>
         </CardHeader>
         <CardContent>
           {/* 3. Conexão dos filtros com os componentes de UI */}

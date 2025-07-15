@@ -16,7 +16,7 @@ export default async function PDV() {
 
       <div className="flex-1 flex">
         {user.limit.pdv ? (
-          <PDVSystem user={user} />
+          <PDVSystem user={user}  />
         ) : (
           <UnderDevelopment />
         )}

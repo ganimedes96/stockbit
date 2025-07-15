@@ -1,3 +1,5 @@
+
+
 import type React from "react";
 import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
@@ -38,12 +40,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <head>
-        {/* Adicionar a meta tag theme-color diretamente no head garante
-            que a cor da barra de status do navegador seja aplicada de forma consistente,
-            especialmente em dispositivos móveis. */}
-        {/* <meta name="theme-color" content="#0f172a" /> */}
-      </head>
       <body className={`${PJS.className} antialiased`}>
         <ThemeProvider
           attribute="class"

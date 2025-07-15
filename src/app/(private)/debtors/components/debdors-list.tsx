@@ -70,11 +70,11 @@ export function DebtorsList({ user }: DebtorsListProps) {
       return [];
     }
 
-    // O tipo para o objeto de agregação. Não precisa do 'id' aqui.
     type AggregationData = Omit<AggregatedDebtorData, "client" | "id">;
     const aggregatedData: Record<string, AggregationData> = {};
     const today = new Date();
 
+    // Primeiro, processamos todas as dívidas para agregar os dados
     for (const debt of debtors) {
       if (!aggregatedData[debt.clientId]) {
         aggregatedData[debt.clientId] = {
@@ -92,8 +92,6 @@ export function DebtorsList({ user }: DebtorsListProps) {
         clientData.overdueAmount += calculateOverdueAmount(debt, today);
       }
 
-      // LÓGICA DE ÚLTIMA COMPRA SIMPLIFICADA E CORRIGIDA
-      // Se não houver uma data de última compra ou se a data da dívida atual for mais recente, atualize.
       if (
         !clientData.lastPurchase ||
         debt.createdAt > clientData.lastPurchase
@@ -102,86 +100,79 @@ export function DebtorsList({ user }: DebtorsListProps) {
       }
     }
 
-   
+    // Agora filtramos apenas os clientes que aparecem no aggregatedData (ou seja, que têm ou tiveram dívidas)
+    return clients
+      .filter((client) => aggregatedData[client.id]) // Esta linha filtra apenas clientes com histórico de dívidas
+      .map((client) => {
+        const data = aggregatedData[client.id];
 
-    // O passo 2 agora irá incluir todos os clientes
-    return (
-      clients
-        .map((client) => {
-          // Fornece um objeto padrão para clientes que não estão no aggregatedData (não têm dívidas)
-          const data = aggregatedData[client.id] || {
-            totalOwed: 0,
-            overdueAmount: 0,
-            lastPurchase: null,
-          };
+        let status: AggregatedDebtorData["status"] = "Sem dívidas";
+        if (data.totalOwed > 0) {
+          status = data.overdueAmount > 0 ? "Em atraso" : "Em dia";
+        }
 
-          let status: AggregatedDebtorData["status"] = "Sem dívidas";
-
-          if (data.totalOwed > 0) {
-            status = data.overdueAmount > 0 ? "Em atraso" : "Em dia";
-          }
-
-          // Adicionamos o 'id' aqui, que deve vir do próprio cliente
-          return { client, id: client.id, ...data, status };
-        })
-        // A LINHA DO FILTRO FOI REMOVIDA DAQUI
-        .sort(
-          (a, b) =>
-            b.overdueAmount - a.overdueAmount || b.totalOwed - a.totalOwed
-        )
-    );
+        return { client, id: client.id, ...data, status };
+      })
+      .sort(
+        (a, b) => b.overdueAmount - a.overdueAmount || b.totalOwed - a.totalOwed
+      );
   }, [clients, debtors]);
 
-   const filteredDebtorsList = useMemo(() => {
-      let list = debtorsList;
+  const filteredDebtorsList = useMemo(() => {
+    let list = debtorsList;
 
-      // Filtro por texto de busca (nome ou email)
-      if (searchTerm) {
-        list = list.filter(
-          (item) =>
-            item.client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-            item.client.email?.toLowerCase().includes(searchTerm.toLowerCase())
-        );
-      }
+    // Filtro por texto de busca (nome ou email)
+    if (searchTerm) {
+      list = list.filter(
+        (item) =>
+          item.client.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          item.client.email?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
 
-      // Filtro por status
-      if (statusFilter !== "all") {
-        list = list.filter((item) => {
-          if (statusFilter === "overdue") return item.status === "Em atraso";
-          if (statusFilter === "due") return item.status === "Em dia";
-          if (statusFilter === "paid") return item.status === "Sem dívidas";
-          return true;
-        });
-      }
+    // Filtro por status
+    if (statusFilter !== "all") {
+      list = list.filter((item) => {
+        if (statusFilter === "overdue") return item.status === "Em atraso";
+        if (statusFilter === "due") return item.status === "Em dia";
+        if (statusFilter === "paid") return item.status === "Sem dívidas";
+        return true;
+      });
+    }
 
-      return list;
-    }, [debtorsList, searchTerm, statusFilter]);
+    return list;
+  }, [debtorsList, searchTerm, statusFilter]);
 
   return (
     <div className="m-6 flex flex-col gap-6">
       <OverviewDebtors user={user} />
-      <div className="flex justify-end">
-        <FormModal
-          title="Nova Venda a Prazo"
-          description="Registre uma venda que será paga posteriormente"
-          formComponent={DebdorForm}
-          formProps={{
-            companyId: user.company.id,
-          }}
-          customButton={
-            <Button variant="default" size="lg" className="md:max-w-40 w-full">
-                <Plus size={35} />
-              Nova Venda          
-            </Button>
-          }
-        />
-      </div>
+
       <Card>
-        <CardHeader>
-          <CardTitle>Gerenciamento de Devedores</CardTitle>
-          <CardDescription>
-            Controle de clientes com pendências financeiras
-          </CardDescription>
+        <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <CardTitle>Gerenciamento de Devedores</CardTitle>
+            <CardDescription>
+              Controle de clientes com pendências financeiras
+            </CardDescription>
+          </div>
+          <FormModal
+            title="Nova Venda a Prazo"
+            description="Registre uma venda que será paga posteriormente"
+            formComponent={DebdorForm}
+            formProps={{
+              companyId: user.company.id,
+            }}
+            customButton={
+              <Button
+                variant="default"
+                size="lg"
+                className="md:max-w-40 w-full"
+              >
+                  <Plus size={35} />
+                Nova Venda          
+              </Button>
+            }
+          />
         </CardHeader>
         <div className="flex flex-col sm:flex-row gap-4 p-6 border-b">
           <Input
@@ -207,7 +198,7 @@ export function DebtorsList({ user }: DebtorsListProps) {
           <ScrollArea className="max-h-[900px] w-full overflow-auto">
             <div className="min-w-[900px]">
               <Table className="mt-6">
-                <TableHeader>
+                <TableHeader className="bg-sidebar">
                   <TableRow>
                     <TableHead>Cliente</TableHead>
                     <TableHead className="text-center">Total Devido</TableHead>
@@ -289,7 +280,7 @@ export function DebtorsList({ user }: DebtorsListProps) {
             <div className="py-8 text-center">
               <Package className="mx-auto mb-4 h-12 w-12 text-gray-400" />
               <p className="text-gray-500">
-                Nenhum cliente com dívidas encontrado.
+                Nenhum cliente com histórico de dívidas encontrado.
               </p>
             </div>
           )}

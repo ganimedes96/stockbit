@@ -12,6 +12,7 @@ import {
   Monitor,
   ScrollText,
   HandCoins,
+  UserCog,
 } from "lucide-react";
 import React from "react";
 
@@ -105,9 +106,20 @@ export const navItems: NavItem[] = [
   },
   // NOVO ITEM COLAPSÁVEL
   {
-    title: "Devedores",
-    icon: <UserRoundSearch className="h-4 w-4" />,
-    href: "/debtors",
+    title: "Clientes",
+    icon: <UserCog className="h-4 w-4" />,
+    subItems: [
+      {
+        title: "Lista de Clientes",
+        href: "/clients",
+        icon: <Users className="h-4 w-4" />,
+      },
+      {
+        title: "Devedores",
+        href: "/debtors",
+        icon: <UserRoundSearch className="h-4 w-4" />,
+      },
+    ],
   },
   {
     title: "Funcionários",

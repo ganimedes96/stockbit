@@ -31,6 +31,7 @@ import { format } from "date-fns";
 import {
   Calendar,
   Package,
+  Plus,
   Search,
   TrendingDown,
   TrendingUp,
@@ -39,24 +40,24 @@ import { useMemo, useState } from "react";
 import { HistoryMovimentsSkeleton } from "./loading";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { useDebounce } from "@/hooks/use-debounce";
-
+import { FormSheet } from "@/components/form/containers/form-sheet";
+import { FormMovement } from "./form-movement";
+import { Button } from "@/components/ui/button";
 
 interface HistoryMovimentsProps {
-  companyId: string;
   user: User;
 }
 
-export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
+export function HistoryMoviments({ user }: HistoryMovimentsProps) {
   const [selectStatus, setSelectStatus] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectPeriod, setSelectPeriod] = useState<"month" | "day">("month");
   const debouncedSearchTerm = useDebounce(searchTerm, 500);
 
   const { data: movements, isLoading: isLoadingMoviments } = useMovementsFilter(
-    companyId,
+    user.company.id,
     selectPeriod
   );
-
 
   // 2. O useMemo agora é muito mais simples e eficiente.
   const { filteredMovements, summaryIn, summaryOut } = useMemo(() => {
@@ -94,7 +95,7 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
     return <HistoryMovimentsSkeleton />;
   }
   return (
-    <div className="flex flex-col  mx-6 mb-6">
+    <div className="flex flex-col  m-6">
       <Tabs
         className="flex flex-row items-center justify-end mb-6"
         defaultValue="bar"
@@ -158,11 +159,25 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
         </Card>
       </div>
       <Card>
-        <CardHeader>
-          <CardTitle>Histórico de Movimentações</CardTitle>
-          <CardDescription>
-            Todas as entradas e saídas de produtos registradas no sistema
-          </CardDescription>
+        <CardHeader className="flex flex-row items-end justify-between gap-4">
+          <div>
+            <CardTitle>Histórico de Movimentações</CardTitle>
+            <CardDescription>
+              Todas as entradas e saídas de produtos registradas no sistema
+            </CardDescription>
+          </div>
+          <FormSheet
+            title="Nova Movimentação"
+            description="Registre uma entrada ou saída de produtos no estoque"
+            formComponent={FormMovement}
+            formProps={{ user }}
+            customButton={
+              <Button variant="default" size="sm">
+                <Plus size={35} />
+                Registrar movimentação
+              </Button>
+            }
+          />
         </CardHeader>
         <CardContent>
           <div className="flex flex-col sm:flex-row gap-4">
@@ -189,16 +204,16 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
               </SelectContent>
             </Select>
           </div>
-          <ScrollArea className="max-h-[500px] w-full overflow-auto">
+          <ScrollArea className="max-h-[500px] w-full overflow-auto mt-4">
             <div className="min-w-[900px]">
               <Table className="mt-6">
-                <TableHeader>
+                <TableHeader className="bg-sidebar">
                   <TableRow>
                     <TableHead>Data/Hora</TableHead>
                     <TableHead>Produto</TableHead>
-                    <TableHead>Tipo</TableHead>
-                    <TableHead>Quantidade</TableHead>
-                    <TableHead>Motivo</TableHead>
+                    <TableHead className="text-center">Tipo</TableHead>
+                    <TableHead className="text-center">Quantidade</TableHead>
+                    <TableHead className="text-center">Motivo</TableHead>
                     <TableHead>Observações</TableHead>
                     <TableHead>Usuário</TableHead>
                   </TableRow>
@@ -212,15 +227,11 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
                       <TableCell>
                         <div>
                           <p className="font-medium">
-                            {
-                             movement.productName  || "Sem nome"
-                            }
+                            {movement.productName || "Sem nome"}
                           </p>
                           <p className="text-sm text-gray-500">
                             SKU:
-                            {
-                             movement.sku || "Sem SKU"
-                            }
+                            {movement.sku || "Sem SKU"}
                           </p>
                         </div>
                       </TableCell>
@@ -250,7 +261,7 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
                           )}
                         </Badge>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-center">
                         <span
                           className={`font-medium ${
                             movement.type === StockMovementType.STOCK_IN
@@ -264,12 +275,11 @@ export function HistoryMoviments({ companyId }: HistoryMovimentsProps) {
                           {movement.quantity}
                         </span>
                       </TableCell>
-                      <TableCell>{movement.reason}</TableCell>
+                      <TableCell className="text-center">{movement.reason}</TableCell>
                       <TableCell className="max-w-xs truncate">
                         {movement.description || "Nenhuma observação"}
                       </TableCell>
-                      <TableCell>{movement.responsible || "N/A"}</TableCell>
-                     
+                      <TableCell className="text-center">{movement.responsible || "N/A"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

@@ -9,8 +9,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useProductList, useUpdateStatusProduct } from "@/domain/product/queries";
-import { AlertTriangle, Filter, Search, SquarePen } from "lucide-react";
+import {
+  useProductList,
+  useUpdateStatusProduct,
+} from "@/domain/product/queries";
+import { AlertTriangle, Filter, Plus, Search, SquarePen } from "lucide-react";
 
 import { useMemo, useState } from "react";
 import { TableSkeleton } from "./card-product-skeleton";
@@ -37,6 +40,7 @@ import { ScrollArea } from "@radix-ui/react-scroll-area";
 import { ScrollBar } from "@/components/ui/scroll-area";
 import { useDebounce } from "@/hooks/use-debounce";
 import { StatusSwitch } from "@/components/status-switch";
+import FormProduct from "../create/form-product";
 
 interface ListProductProps {
   companyId: string;
@@ -50,7 +54,7 @@ export function ListProduct({ companyId, user }: ListProductProps) {
   const [stockStatusFilter, setStockStatusFilter] = useState("all");
   const { data: products, isLoading } = useProductList(companyId);
   const { data: categories } = useCategoryList(companyId);
-  const {mutate, isPending} = useUpdateStatusProduct(companyId);
+  const { mutate, isPending } = useUpdateStatusProduct(companyId);
   const getStockStatus = (stock: number, minStock: number) => {
     if (stock <= 0) {
       return { variant: "danger" as const, label: "Esgotado" };
@@ -61,13 +65,11 @@ export function ListProduct({ companyId, user }: ListProductProps) {
     return { variant: "success" as const, label: "Disponível" };
   };
 
- 
-
   const categoryMap = useMemo(() => {
     if (!categories) {
       return new Map<string, string>();
     }
-  
+
     return categories.reduce((map, category) => {
       map.set(category.id, category.name);
       return map;
@@ -104,7 +106,7 @@ export function ListProduct({ companyId, user }: ListProductProps) {
     });
   }, [products, debouncedSearchQuery, selectedCategory, stockStatusFilter]);
 
-   const handleMutate = (data: { id: string; status: boolean }) => {
+  const handleMutate = (data: { id: string; status: boolean }) => {
     mutate({
       productId: data.id,
       status: data.status,
@@ -200,11 +202,28 @@ export function ListProduct({ companyId, user }: ListProductProps) {
           </p>
         </div>
       </div>
-
+      <div className="flex justify-end">
+        <FormSheet
+          title="Novo Produto"
+          description="Registre um novo produto no estoque"
+          formComponent={FormProduct}
+          formProps={{ user }}
+          customButton={
+            <Button
+              variant="default"
+              size="sm"
+              className="flex items-center justify-center w-full  md:max-w-40"
+            >
+              <Plus size={35} />
+              Registrar produto
+            </Button>
+          }
+        />
+      </div>
       <Card>
         <ScrollArea className="max-h-[700px] overflow-auto">
           <Table>
-            <TableHeader className=" bg-zinc-800 sticky top-0">
+            <TableHeader className=" bg-sidebar sticky top-0">
               <TableRow>
                 <TableHead>SKU</TableHead>
                 <TableHead>Imagem</TableHead>
@@ -297,13 +316,13 @@ export function ListProduct({ companyId, user }: ListProductProps) {
                       <TableCell>
                         {/* <Button variant="ghost" icon={<SquarePen />}></Button> */}
                         <div className="flex items-center justify-center gap-3">
-                         <StatusSwitch
+                          <StatusSwitch
                             entity={product}
                             mutate={handleMutate}
                             isPending={isPending}
                             statusKey={"isActive"}
-                         />
-                         
+                          />
+
                           <FormSheet
                             title="Editar Produto"
                             description="Editar produto no estoque"
