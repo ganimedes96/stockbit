@@ -55,6 +55,14 @@ export function ClientDelete({ client, companyId, buttonText }: ClientDeleteProp
         <DialogFooter className=" flex flex-col gap-2">
           <Button
             type="button"
+            variant="outline"
+            onClick={() => setOpen(false)}
+            disabled={isPending}
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="button"
             variant="destructive"
             onClick={handleDelete}
             disabled={isPending}
@@ -62,14 +70,6 @@ export function ClientDelete({ client, companyId, buttonText }: ClientDeleteProp
             titleLoading="Excluindo..."
           >
             Confirmar
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setOpen(false)}
-            disabled={isPending}
-          >
-            Cancelar
           </Button>
         </DialogFooter>
       </DialogContent>

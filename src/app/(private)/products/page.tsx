@@ -12,7 +12,7 @@ export default async function Products() {
   return (
     <>
       <Header user={user} />
-
+      
       <ListProduct user={user} />
     </>
   );

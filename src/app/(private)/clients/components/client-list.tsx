@@ -27,7 +27,7 @@ import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { ClientListMobileSkeleton, Loading } from "./loading";
-import {  PenBoxIcon, Search } from "lucide-react";
+import { PenBoxIcon, Plus, Search } from "lucide-react";
 import { FormSheet } from "@/components/form/containers/form-sheet";
 import { ClientUpdate } from "./client-update";
 import { Button } from "@/components/ui/button";
@@ -39,6 +39,7 @@ import { getUserInitials } from "@/utils/get-user-initials";
 
 import { useClientList } from "@/domain/clients/queries";
 import { WhatsAppButton } from "../../debtors/components/button-whatsapp";
+import { ClientForm } from "./client-form";
 
 export function ClientList({
   companyId,
@@ -200,7 +201,7 @@ export function ClientList({
                           }
                         />
 
-                        {role === "company" && (
+                        {role === "admin" && (
                           <ClientDelete client={client} companyId={companyId} />
                         )}
                       </div>
@@ -216,37 +217,48 @@ export function ClientList({
 
       <Card className="hidden sm:block">
         <CardHeader className="flex flex-col gap-3">
-          <div className="flex flex-row justify-between items-center">
-            <div className="max-md:hidden flex flex-col gap-1">
-              <CardTitle>Clientes</CardTitle>
-              <CardDescription>
-                {birthdayFilter === "today"
-                  ? "Aniversariantes do dia"
-                  : "Todos os clientes"}
-              </CardDescription>
-            </div>
-            <div className="flex gap-2">
-              <Select
-                value={birthdayFilter}
-                onValueChange={(value) =>
-                  setBirthdayFilter(value as "all" | "today")
-                }
-              >
-                <SelectTrigger className="w-72 h-10">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="today">Aniversariantes hoje</SelectItem>
-                  <SelectItem value="month">Aniversariantes do mês</SelectItem>
-                </SelectContent>
-              </Select>
+          <div className="flex flex-row  justify-between items-center gap-4">
+            <div className=" flex flex-col  w-1/2">
               <Input
                 placeholder="Pesquisar..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 icon={<Search className="h-4 w-4" />}
               />
+            </div>
+            <div className="flex gap-2 items-center">
+              <Select
+                value={birthdayFilter}
+                onValueChange={(value) =>
+                  setBirthdayFilter(value as "all" | "today")
+                }
+              >
+                <SelectTrigger className="w-60 h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent >
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="today">Aniversariantes hoje</SelectItem>
+                  <SelectItem value="month">Aniversariantes do mês</SelectItem>
+                </SelectContent>
+              </Select>
+            <FormSheet
+              title="Adicionar cliente"
+              description="Adicione um novo cliente ao seu sistema."
+              formComponent={ClientForm}
+              formProps={{ companyId }}
+              customButton={
+              <Button
+                variant="default"
+                size="lg"
+                className="md:max-w-40 w-full"
+              >
+                  <Plus size={35} />
+                Adicionar          
+              </Button>
+            }
+            />
+
             </div>
           </div>
         </CardHeader>
@@ -334,6 +346,8 @@ export function ClientList({
                           message={`Olá, ${client.name.split(" ")[0]}!`}
                           variant="outline"
                         />
+
+                        <ClientDelete client={client} companyId={companyId} />
                       </TableCell>
                     </TableRow>
                   ))

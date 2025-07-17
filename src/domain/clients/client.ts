@@ -26,12 +26,17 @@ export async function getClients(companyId: string) {
     const data = doc.data();
 
     return {
-      ...data,
+      
+      name: data.name,
+      email: data.email,
+      phone: data.phone,
+      // birthday: data.birthday ? data.birthday.toDate() : null,
       createdAt: data.createdAt.toDate(),
       id: doc.id,
     } as Client;
   });
 }
+
 
 export async function getClientById(companyId: string, clientId: string) {
   const clientRef = doc(
@@ -82,6 +87,8 @@ export async function getClientByPhone(
 
   return {
     ...client,
+    createdAt: client.createdAt.toDate(),
+    birthday: client.birthday ? client.birthday.toDate() : '',
     id: snapshot.docs[0].id,
   } as Client;
 }

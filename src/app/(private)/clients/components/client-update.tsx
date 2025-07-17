@@ -85,7 +85,7 @@ export function ClientUpdate({
         name="birthday"
         label="Data de nascimento"
         maskType="date"
-        placeholder="Selecione sua data de nascimento"
+        placeholder="DD/MM/AAAA"
       />
       <ControlledInput
         control={control}

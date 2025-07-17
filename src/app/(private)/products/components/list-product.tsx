@@ -41,7 +41,8 @@ import { ScrollBar } from "@/components/ui/scroll-area";
 import { useDebounce } from "@/hooks/use-debounce";
 import { StatusSwitch } from "@/components/status-switch";
 import FormProduct from "../create/form-product";
-import { exportProductsToExcel } from "./export-products-to-excel";
+import { exportProductsToExcel } from "./helpers";
+import { ProductValidity } from "./product-validity";
 
 interface ListProductProps {
   user: User;
@@ -83,7 +84,7 @@ export function ListProduct({ user }: ListProductProps) {
       const matchesSearch =
         product.name
           .toLowerCase()
-          .includes(debouncedSearchQuery.toLowerCase()) || // <-- Use o valor debounced
+          .includes(debouncedSearchQuery.toLowerCase()) ||
         (product.description ?? "")
           .toLowerCase()
           .includes(debouncedSearchQuery.toLowerCase());
@@ -92,6 +93,11 @@ export function ListProduct({ user }: ListProductProps) {
         selectedCategory === "all" || product.categoryId === selectedCategory;
 
       let matchesStockStatus = true;
+
+      const now = new Date();
+      const soonThreshold = new Date();
+      soonThreshold.setDate(now.getDate() + 7);
+
       if (stockStatusFilter === "low") {
         matchesStockStatus =
           product.openingStock <= product.minimumStock &&
@@ -100,6 +106,14 @@ export function ListProduct({ user }: ListProductProps) {
         matchesStockStatus = product.openingStock <= 0;
       } else if (stockStatusFilter === "normal") {
         matchesStockStatus = product.openingStock > product.minimumStock;
+      } else if (stockStatusFilter === "expired") {
+        matchesStockStatus =
+          !!product.expirationDate && product.expirationDate < now;
+      } else if (stockStatusFilter === "expiringSoon") {
+        matchesStockStatus =
+          !!product.expirationDate &&
+          product.expirationDate >= now &&
+          product.expirationDate <= soonThreshold;
       }
 
       return matchesSearch && matchesCategory && matchesStockStatus;
@@ -112,6 +126,11 @@ export function ListProduct({ user }: ListProductProps) {
       status: data.status,
     });
   };
+
+  const expiredCount =
+    filteredProducts?.filter(
+      (p) => p.expirationDate && p.expirationDate < new Date()
+    ).length || 0;
 
   return (
     <div className="flex flex-col gap-4 p-6">
@@ -157,6 +176,8 @@ export function ListProduct({ user }: ListProductProps) {
               <SelectItem value="normal">Estoque normal</SelectItem>
               <SelectItem value="low">Estoque baixo</SelectItem>
               <SelectItem value="out">Esgotado</SelectItem>
+              <SelectItem value="expiringSoon">Próximos de vencer</SelectItem>
+              <SelectItem value="expired">Vencidos</SelectItem>
             </SelectContent>
           </Select>
 
@@ -174,7 +195,7 @@ export function ListProduct({ user }: ListProductProps) {
         </CardContent>
       </Card>
 
-      <div className="my-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="my-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
         <div className="bg-blue-50 p-4 rounded-lg">
           <p className="text-sm text-blue-600">Total de Produtos</p>
           <p className="text-2xl font-bold text-blue-900">
@@ -200,6 +221,10 @@ export function ListProduct({ user }: ListProductProps) {
                 .length
             }
           </p>
+        </div>
+        <div className="bg-red-50 p-4 rounded-lg">
+          <p className="text-sm text-red-600">Produtos Vencidos</p>
+          <p className="text-2xl font-bold text-red-900">{expiredCount}</p>
         </div>
       </div>
       <div className="flex gap-2 justify-end">
@@ -240,7 +265,8 @@ export function ListProduct({ user }: ListProductProps) {
                 <TableHead>Preço de Custo</TableHead>
                 <TableHead>Preço de Venda</TableHead>
                 <TableHead>Estoque</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead className="text-center">Validade</TableHead>
+                <TableHead className="text-center">Status</TableHead>
                 <TableHead className="text-center">Ações</TableHead>
               </TableRow>
             </TableHeader>
@@ -256,7 +282,7 @@ export function ListProduct({ user }: ListProductProps) {
 
                   return (
                     <TableRow key={product.id}>
-                      <TableCell className="font-mono text-sm">
+                      <TableCell className="font-mono text-sm max-w-[90px] truncate">
                         {product?.sku || "N/A"}
                       </TableCell>
                       <TableCell>
@@ -275,7 +301,9 @@ export function ListProduct({ user }: ListProductProps) {
                       </TableCell>
                       <TableCell>
                         <div>
-                          <p className="font-medium">{product.name}</p>
+                          <p className="font-medium max-w-[90px] truncate">
+                            {product.name}
+                          </p>
                           {product.openingStock <= product.minimumStock && (
                             <div className="flex items-center text-orange-600 text-xs mt-1">
                               <AlertTriangle className="h-3 w-3 mr-1" />
@@ -308,7 +336,15 @@ export function ListProduct({ user }: ListProductProps) {
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-center">
+                        {product.hasAnExpirationDate &&
+                        product.expirationDate ? (
+                          <ProductValidity date={product.expirationDate} />
+                        ) : (
+                          <span className="text-gray-400 text-sm">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-center">
                         <Badge
                           className={`${
                             stockStatus.variant === "warning"
