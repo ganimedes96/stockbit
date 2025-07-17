@@ -34,6 +34,8 @@ export async function CreateProduct(
         categoryId: product.categoryId,
         sku: product.sku ?? "",
         photo: imagePath ?? "", 
+        hasAnExpirationDate: product.hasAnExpirationDate,
+        expirationDate: product.hasAnExpirationDate ? product.expirationDate : "",
         description: product.description || "",
         isActive: product.isActive,
         minimumStock: Number(product.minimumStock) || 0,
@@ -83,8 +85,6 @@ export async function UpdateProduct(
 ): Promise<ResponseServerAction> {
   const user = await getUser();
 
-  console.log("PRODUCT", product);
-
   try {
     const userId = user?.id;
     const file = product.photo as File;
@@ -121,6 +121,8 @@ export async function UpdateProduct(
       sku: product.sku ?? "",
       photo: imagePath ?? "",
       categoryId: product.categoryId,
+      hasAnExpirationDate: product.hasAnExpirationDate,
+      expirationDate: product.hasAnExpirationDate ? product.expirationDate : undefined,
       description: product.description ? product.description : "",
       isActive: product.isActive,
       minimumStock: product.minimumStock,

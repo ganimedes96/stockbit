@@ -18,6 +18,8 @@ import { Product } from "@/domain/product/types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ControlledTextarea } from "@/components/form/controllers/controlled-text-area";
 import { Dices } from "lucide-react";
+import { ControlledSwitch } from "@/components/form/controllers/controlled-switch";
+import { ControlledDateTimePicker } from "@/components/form/controllers/controlled-date-time-picker";
 
 interface ProductFormProps {
   user: User;
@@ -67,6 +69,8 @@ export default function UpdateFormProduct({
       minimumStock: product?.minimumStock,
       openingStock: product?.openingStock,
       purchasePrice: product?.purchasePrice,
+      hasAnExpirationDate: product?.hasAnExpirationDate,
+      expirationDate: product?.expirationDate,
       supplierId: product?.supplierId,
       categoryId: product?.categoryId,
       isActive: product?.isActive,
@@ -75,7 +79,7 @@ export default function UpdateFormProduct({
     },
   });
   const productName = watch("name");
-
+  const hasAnExpirationDate = watch("hasAnExpirationDate");
   const handleGenerateSku = () => {
     const prefix = productName.substring(0, 3).toUpperCase();
     const randomNum = Math.floor(100 + Math.random() * 900);
@@ -92,6 +96,8 @@ export default function UpdateFormProduct({
         isActive: product.isActive,
         categoryId: product.categoryId,
         salePrice: product.salePrice,
+        hasAnExpirationDate: product.hasAnExpirationDate,
+        expirationDate: product.expirationDate,
         photo: product.photo || undefined,
         minimumStock: product.minimumStock,
         openingStock: product.openingStock,
@@ -108,6 +114,8 @@ export default function UpdateFormProduct({
         name: data.name,
         sku: data.sku ?? "",
         categoryId: data.categoryId,
+        hasAnExpirationDate: data.hasAnExpirationDate,
+        expirationDate: hasAnExpirationDate ? data.expirationDate : undefined,
         description: data.description ?? "",
         minimumStock: data.minimumStock,
         openingStock: data.openingStock,
@@ -268,6 +276,22 @@ export default function UpdateFormProduct({
                 placeholder="Ex: 30"
                 rules={{ required: "Estoque mínimo é obrigatório" }}
               />
+            </div>
+            <div className="w-full flex flex-col gap-4">
+              <ControlledSwitch
+                control={control}
+                name="hasAnExpirationDate"
+                label="Tem data de validade?"
+              />
+              {hasAnExpirationDate && (
+                <ControlledDateTimePicker
+                  control={control}
+                  name="expirationDate"
+                  showTime={false}
+                  label="Data *"
+                  placeholder="Selecione uma data"
+                />
+              )}
             </div>
 
             <ControlledTextarea

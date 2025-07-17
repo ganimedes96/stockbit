@@ -4,6 +4,8 @@ export type Product = {
   photo?: string | File;
   sku?: string;
   description?: string;
+  hasAnExpirationDate: boolean;
+  expirationDate?: Date;
   isActive: boolean;
   isFavorite?: boolean;
   categoryId: string;

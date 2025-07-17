@@ -41,20 +41,20 @@ import { ScrollBar } from "@/components/ui/scroll-area";
 import { useDebounce } from "@/hooks/use-debounce";
 import { StatusSwitch } from "@/components/status-switch";
 import FormProduct from "../create/form-product";
+import { exportProductsToExcel } from "./export-products-to-excel";
 
 interface ListProductProps {
-  companyId: string;
   user: User;
 }
 
-export function ListProduct({ companyId, user }: ListProductProps) {
+export function ListProduct({ user }: ListProductProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [stockStatusFilter, setStockStatusFilter] = useState("all");
-  const { data: products, isLoading } = useProductList(companyId);
-  const { data: categories } = useCategoryList(companyId);
-  const { mutate, isPending } = useUpdateStatusProduct(companyId);
+  const { data: products, isLoading } = useProductList(user.company.id);
+  const { data: categories } = useCategoryList(user.company.id);
+  const { mutate, isPending } = useUpdateStatusProduct(user.company.id);
   const getStockStatus = (stock: number, minStock: number) => {
     if (stock <= 0) {
       return { variant: "danger" as const, label: "Esgotado" };
@@ -202,7 +202,15 @@ export function ListProduct({ companyId, user }: ListProductProps) {
           </p>
         </div>
       </div>
-      <div className="flex justify-end">
+      <div className="flex gap-2 justify-end">
+        <Button
+          variant="outline"
+          size={"sm"}
+          onClick={() => exportProductsToExcel(filteredProducts, categoryMap)}
+        >
+          Exportar Excel
+        </Button>
+
         <FormSheet
           title="Novo Produto"
           description="Registre um novo produto no estoque"
@@ -212,7 +220,7 @@ export function ListProduct({ companyId, user }: ListProductProps) {
             <Button
               variant="default"
               size="sm"
-              className="flex items-center justify-center w-full  md:max-w-40"
+              className="flex items-center justify-center w-full md:max-w-40"
             >
               <Plus size={35} />
               Registrar produto
@@ -336,7 +344,7 @@ export function ListProduct({ companyId, user }: ListProductProps) {
                           />
                           <ProductDelete
                             product={product}
-                            companyId={companyId}
+                            companyId={user.company.id}
                           />
                         </div>
                       </TableCell>

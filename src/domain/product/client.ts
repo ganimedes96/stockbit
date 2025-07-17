@@ -29,6 +29,7 @@ export async function getProducts(companyId: string): Promise<Product[]> {
       return {
         ...data,
         id: doc.id,
+        expirationDate: data.expirationDate ? data.expirationDate.toDate() : "",
         createdAt: data.createdAt.toDate(),
         updatedAt: data.updatedAt?.toDate(),
       } as Product;

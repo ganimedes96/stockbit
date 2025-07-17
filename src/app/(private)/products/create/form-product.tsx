@@ -17,6 +17,8 @@ import { FormSupplier } from "@/app/(private)/supplier/components/form-supplier"
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMemo } from "react";
 import { Dices } from "lucide-react";
+import { ControlledSwitch } from "@/components/form/controllers/controlled-switch";
+import { ControlledDateTimePicker } from "@/components/form/controllers/controlled-date-time-picker";
 
 interface ProductFormProps {
   user: User;
@@ -54,6 +56,8 @@ export default function FormProduct({ user }: ProductFormProps) {
       name: "",
       description: "",
       sku: "",
+      hasAnExpirationDate: false,
+      
       categoryId: "",
       supplierId: "",
       purchasePrice: 1,
@@ -65,6 +69,7 @@ export default function FormProduct({ user }: ProductFormProps) {
     },
   });
   const productName = watch("name");
+  const hasAnExpirationDate = watch("hasAnExpirationDate");
   const handleGenerateSku = () => {
     const prefix = productName.substring(0, 3).toUpperCase();
     const randomNum = Math.floor(100 + Math.random() * 900);
@@ -79,6 +84,8 @@ export default function FormProduct({ user }: ProductFormProps) {
         description: data.description ?? "",
         supplierId: data.supplierId,
         sku: data.sku ?? "",
+        hasAnExpirationDate: data.hasAnExpirationDate,
+        expirationDate: hasAnExpirationDate ? data.expirationDate : undefined,
         purchasePrice: data.purchasePrice,
         openingStock: data.openingStock,
         minimumStock: data.minimumStock,
@@ -105,7 +112,6 @@ export default function FormProduct({ user }: ProductFormProps) {
 
   return (
     <div className="mx-auto flex flex-col h-[calc(100vh-150px)]">
-   
       <ScrollArea className="h-full w-full pr-4">
         <form onSubmit={handleSubmit(onSubmit)} className="w-full pb-4">
           <div className="flex flex-col gap-4">
@@ -146,7 +152,6 @@ export default function FormProduct({ user }: ProductFormProps) {
               </div>
             </div>
 
-            
             <div className="w-full grid grid-cols-1 md:grid-cols-[2fr_2fr] gap-4">
               <ControlledCombobox
                 control={control}
@@ -236,6 +241,22 @@ export default function FormProduct({ user }: ProductFormProps) {
                 placeholder="Ex: 30"
                 rules={{ required: "Estoque mínimo é obrigatório" }}
               />
+            </div>
+            <div className="w-full flex flex-col gap-4">
+              <ControlledSwitch
+                control={control}
+                name="hasAnExpirationDate"
+                label="Tem data de validade?"
+              />
+              {hasAnExpirationDate && (
+                <ControlledDateTimePicker
+                  control={control}
+                  name="expirationDate"
+                  showTime={false}
+                  label="Data *"
+                  placeholder="Selecione uma data"
+                />
+              )}
             </div>
 
             <ControlledTextarea

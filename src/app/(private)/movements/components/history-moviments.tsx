@@ -95,7 +95,7 @@ export function HistoryMoviments({ user }: HistoryMovimentsProps) {
     return <HistoryMovimentsSkeleton />;
   }
   return (
-    <div className="flex flex-col  m-6">
+    <div className="flex flex-col m-6">
       <Tabs
         className="flex flex-row items-center justify-end mb-6"
         defaultValue="bar"
@@ -275,11 +275,15 @@ export function HistoryMoviments({ user }: HistoryMovimentsProps) {
                           {movement.quantity}
                         </span>
                       </TableCell>
-                      <TableCell className="text-center">{movement.reason}</TableCell>
+                      <TableCell className="text-center">
+                        {movement.reason}
+                      </TableCell>
                       <TableCell className="max-w-xs truncate">
                         {movement.description || "Nenhuma observação"}
                       </TableCell>
-                      <TableCell className="text-center">{movement.responsible || "N/A"}</TableCell>
+                      <TableCell className="text-center">
+                        {movement.responsible || "N/A"}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

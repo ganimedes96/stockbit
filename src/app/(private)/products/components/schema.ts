@@ -10,6 +10,8 @@ export const formProductSchema = z.object({
   sku: z.string().optional(),
   categoryId: z.string().min(1, "Categoria é obrigatório"),
   supplierId: z.string().optional(),
+  hasAnExpirationDate: z.boolean(),
+  expirationDate: z.date().optional(),
   salePrice: z.coerce.number().min(0.01, "O preço de venda deve ser positivo."),
   purchasePrice: z.coerce
     .number()
@@ -43,6 +45,16 @@ export const formProductSchema = z.object({
       }
       return true;
     }, "Formato inválido. Somente arquivos JPG, JPEG e PNG são permitidos"),
+}).superRefine((data, ctx) => {
+  if (data.hasAnExpirationDate) {
+    if (!data.expirationDate) {
+      ctx.addIssue({
+        path: ["expirationDate"],
+        code: z.ZodIssueCode.custom,
+        message: "Data de validade é obrigatória",
+      });
+    }
+  }
 });
 
 export type FormProductValues = z.infer<typeof formProductSchema>;
