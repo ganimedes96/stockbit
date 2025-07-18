@@ -134,6 +134,38 @@ export function ListProduct({ user }: ListProductProps) {
 
   return (
     <div className="flex flex-col gap-4 p-6">
+       <div className="my-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-blue-50 p-4 rounded-lg">
+          <p className="text-sm text-blue-600">Total de Produtos</p>
+          <p className="text-2xl font-bold text-blue-900">
+            {filteredProducts?.length}
+          </p>
+        </div>
+        <div className="bg-green-50 p-4 rounded-lg">
+          <p className="text-sm text-green-600">Valor Total (Custo)</p>
+          <p className="text-2xl font-bold text-green-900">
+            {formatCurrency(
+              filteredProducts?.reduce(
+                (acc, p) => acc + p.purchasePrice * p.openingStock,
+                0
+              )
+            )}
+          </p>
+        </div>
+        <div className="bg-orange-50 p-4 rounded-lg">
+          <p className="text-sm text-orange-600">Produtos com Estoque Baixo</p>
+          <p className="text-2xl font-bold text-orange-900">
+            {
+              filteredProducts?.filter((p) => p.openingStock <= p.minimumStock)
+                .length
+            }
+          </p>
+        </div>
+        <div className="bg-red-50 p-4 rounded-lg">
+          <p className="text-sm text-red-600">Produtos Vencidos</p>
+          <p className="text-2xl font-bold text-red-900">{expiredCount}</p>
+        </div>
+      </div>
       <Card className="w-full">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg">
@@ -194,43 +226,12 @@ export function ListProduct({ user }: ListProductProps) {
           </Button>
         </CardContent>
       </Card>
+     
 
-      <div className="my-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <p className="text-sm text-blue-600">Total de Produtos</p>
-          <p className="text-2xl font-bold text-blue-900">
-            {filteredProducts?.length}
-          </p>
-        </div>
-        <div className="bg-green-50 p-4 rounded-lg">
-          <p className="text-sm text-green-600">Valor Total (Custo)</p>
-          <p className="text-2xl font-bold text-green-900">
-            {formatCurrency(
-              filteredProducts?.reduce(
-                (acc, p) => acc + p.purchasePrice * p.openingStock,
-                0
-              )
-            )}
-          </p>
-        </div>
-        <div className="bg-orange-50 p-4 rounded-lg">
-          <p className="text-sm text-orange-600">Produtos com Estoque Baixo</p>
-          <p className="text-2xl font-bold text-orange-900">
-            {
-              filteredProducts?.filter((p) => p.openingStock <= p.minimumStock)
-                .length
-            }
-          </p>
-        </div>
-        <div className="bg-red-50 p-4 rounded-lg">
-          <p className="text-sm text-red-600">Produtos Vencidos</p>
-          <p className="text-2xl font-bold text-red-900">{expiredCount}</p>
-        </div>
-      </div>
-      <div className="flex gap-2 justify-end">
+      <div className="flex gap-4 justify-end my-4">
         <Button
           variant="outline"
-          size={"sm"}
+          size={"lg"}
           onClick={() => exportProductsToExcel(filteredProducts, categoryMap)}
         >
           Exportar Excel
@@ -244,7 +245,7 @@ export function ListProduct({ user }: ListProductProps) {
           customButton={
             <Button
               variant="default"
-              size="sm"
+              size="lg"
               className="flex items-center justify-center w-full md:max-w-40"
             >
               <Plus size={35} />

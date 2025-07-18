@@ -7,6 +7,7 @@ export interface Client {
   phone?: string;
   birthday?: string;
   createdAt: Date;
+  updatedAt?: Date;
 }
 
 export type Address = {

@@ -41,7 +41,7 @@ import {
   useGetOpenCashSession,
   useOpenCashSession,
 } from "@/domain/cash-closing/queries";
-import { saveOrderToQueue } from "@/lib/db/indexed-db";
+// import { saveOrderToQueue } from "@/lib/db/indexed-db";
 import { isToday } from "date-fns";
 import { CashSessionStatus, ClosingInput } from "@/domain/cash-closing/types";
 
@@ -287,22 +287,22 @@ export function PDVSystem({ user }: PDVSystemProps) {
     };
   }, []);
 
-  const registerSyncTask = async () => {
-    // Verifica se o navegador suporta o Service Worker e o SyncManager
-    if ("serviceWorker" in navigator && "SyncManager" in window) {
-      try {
-        const sw = await navigator.serviceWorker.ready;
-        // Registra uma tag de sincronização. O navegador irá disparar o evento 'sync'
-        // no Service Worker com esta tag assim que a conexão for estável.
-        await sw.sync.register("sync-pending-orders");
-        console.log(
-          "Tarefa de sincronização 'sync-pending-orders' registrada."
-        );
-      } catch (error) {
-        console.error("Falha ao registrar a tarefa de sincronização:", error);
-      }
-    }
-  };
+  // const registerSyncTask = async () => {
+  //   // Verifica se o navegador suporta o Service Worker e o SyncManager
+  //   if ("serviceWorker" in navigator && "SyncManager" in window) {
+  //     try {
+  //       const sw = await navigator.serviceWorker.ready;
+  //       // Registra uma tag de sincronização. O navegador irá disparar o evento 'sync'
+  //       // no Service Worker com esta tag assim que a conexão for estável.
+  //       await sw.sync.register("sync-pending-orders");
+  //       console.log(
+  //         "Tarefa de sincronização 'sync-pending-orders' registrada."
+  //       );
+  //     } catch (error) {
+  //       console.error("Falha ao registrar a tarefa de sincronização:", error);
+  //     }
+  //   }
+  // };
   const handleConfirmSale = async (paymentMethod: PaymentMethodOrder) => {
     if (cart.length === 0) {
       toast.error("O carrinho está vazio.");
@@ -344,8 +344,8 @@ export function PDVSystem({ user }: PDVSystemProps) {
       });
     } catch (error) {
       console.warn("Falha na conexão, salvando venda offline:", error);
-      await saveOrderToQueue(orderInput);
-      await registerSyncTask();
+      // await saveOrderToQueue(orderInput);
+      // await registerSyncTask();
       setIsPaymentModalOpen(false);
       setCart([]);
       toast.info("Venda salva offline! Será sincronizada depois.");

@@ -26,12 +26,10 @@ export async function getClients(companyId: string) {
     const data = doc.data();
 
     return {
-      
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      // birthday: data.birthday ? data.birthday.toDate() : null,
+      ...data,
+      birthday: data.birthday ? data.birthday.toDate() : "",
       createdAt: data.createdAt.toDate(),
+      updatedAt: data.updatedAt?.toDate(),
       id: doc.id,
     } as Client;
   });
@@ -85,10 +83,14 @@ export async function getClientByPhone(
 
   const client = snapshot.docs[0].data();
 
+  
+
+
   return {
     ...client,
     createdAt: client.createdAt.toDate(),
     birthday: client.birthday ? client.birthday.toDate() : '',
+    updatedAt: client.updatedAt?.toDate(),
     id: snapshot.docs[0].id,
   } as Client;
 }

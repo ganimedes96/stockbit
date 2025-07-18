@@ -1,16 +1,16 @@
 "use server";
-import { db,  firestore } from "@/lib/firebase/admin";
+import { db, firestore } from "@/lib/firebase/admin";
 import { Collections } from "@/lib/firebase/collections";
 import { CreateClient, UpdateClient } from "./types";
 import { ResponseServerAction, StatusServer } from "@/api/types";
-
+import { parse } from "date-fns";
+import { ptBR } from "date-fns/locale";
 
 export async function createClient(
   companyId: string,
   client: CreateClient
 ): Promise<ResponseServerAction> {
   try {
-
     const clientsRefPhone = await db
       .collection(Collections.companies)
       .doc(companyId)
@@ -34,11 +34,17 @@ export async function createClient(
       throw new Error("Um cliente com esse email já existe");
     }
 
-  
+    const birthday = client.birthday
+      ? firestore.Timestamp.fromDate(
+          parse(client.birthday, "dd/MM/yyyy", new Date(), {
+            locale: ptBR,
+          })
+        )
+      : "";
 
     const body = {
       ...client,
-      birthday: client.birthday || "",
+      birthday,
       createdAt: firestore.Timestamp.now(),
     };
     await db
@@ -60,8 +66,6 @@ export async function createClient(
     };
   }
 }
-
-
 
 export async function updateClient(
   companyId: string,
@@ -99,10 +103,18 @@ export async function updateClient(
     if (!clientRefPhone.empty) {
       throw new Error("Um cliente com esse telefone já existe");
     }
-   
+
+       const birthday = client.birthday
+      ? firestore.Timestamp.fromDate(
+          parse(client.birthday, "dd/MM/yyyy", new Date(), {
+            locale: ptBR,
+          })
+        )
+      : "";
 
     const body = {
       ...client,
+      birthday,
     };
 
     await db

@@ -116,6 +116,6 @@ export const config: MiddlewareConfig = {
    * Isso garante que o middleware só rode em páginas reais da sua aplicação.
    */
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|sw.js|icons|manifest.webmanifest|screenshots).*)",
+    "/((?!api|_next/static|_next/image|favicon.ico|icons|manifest.webmanifest|screenshots).*)",
   ],
 };

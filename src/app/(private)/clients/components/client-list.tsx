@@ -40,6 +40,7 @@ import { getUserInitials } from "@/utils/get-user-initials";
 import { useClientList } from "@/domain/clients/queries";
 import { WhatsAppButton } from "../../debtors/components/button-whatsapp";
 import { ClientForm } from "./client-form";
+import { Separator } from "@/components/ui/separator";
 
 export function ClientList({
   companyId,
@@ -216,38 +217,19 @@ export function ClientList({
       </div>
 
       <Card className="hidden sm:block">
-        <CardHeader className="flex flex-col gap-3">
-          <div className="flex flex-row  justify-between items-center gap-4">
-            <div className=" flex flex-col  w-1/2">
-              <Input
-                placeholder="Pesquisar..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                icon={<Search className="h-4 w-4" />}
-              />
-            </div>
-            <div className="flex gap-2 items-center">
-              <Select
-                value={birthdayFilter}
-                onValueChange={(value) =>
-                  setBirthdayFilter(value as "all" | "today")
-                }
-              >
-                <SelectTrigger className="w-60 h-10">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent >
-                  <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="today">Aniversariantes hoje</SelectItem>
-                  <SelectItem value="month">Aniversariantes do mês</SelectItem>
-                </SelectContent>
-              </Select>
-            <FormSheet
-              title="Adicionar cliente"
-              description="Adicione um novo cliente ao seu sistema."
-              formComponent={ClientForm}
-              formProps={{ companyId }}
-              customButton={
+        <CardHeader className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <CardTitle>Gerenciamento de clientes</CardTitle>
+            <CardDescription>
+              Controle de clientes e suas informações.
+            </CardDescription>
+          </div>
+          <FormSheet
+            title="Adicionar cliente"
+            description="Adicione um novo cliente ao seu sistema."
+            formComponent={ClientForm}
+            formProps={{ companyId }}
+            customButton={
               <Button
                 variant="default"
                 size="lg"
@@ -257,11 +239,36 @@ export function ClientList({
                 Adicionar          
               </Button>
             }
-            />
-
-            </div>
-          </div>
+          />
         </CardHeader>
+        <div className="flex flex-row  justify-between items-center gap-4 px-6">
+          <div className=" flex flex-col  w-1/2">
+            <Input
+              placeholder="Pesquisar..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              icon={<Search className="h-4 w-4" />}
+            />
+          </div>
+          <div className="flex gap-2 items-center">
+            <Select
+              value={birthdayFilter}
+              onValueChange={(value) =>
+                setBirthdayFilter(value as "all" | "today")
+              }
+            >
+              <SelectTrigger className="w-60 h-10">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="today">Aniversariantes hoje</SelectItem>
+                <SelectItem value="month">Aniversariantes do mês</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+        <Separator className="my-6" />
         <CardContent className={isFetching ? "opacity-50" : ""}>
           <ScrollArea className="pr-4 h-[30rem]">
             <Table>
